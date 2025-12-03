@@ -1,4 +1,3 @@
-
 import streamlit as st
 import requests
 import time
@@ -12,14 +11,14 @@ logger = logging.getLogger(__name__)
 
 st.set_page_config(
     page_title="SUNY Academic Guidance",
-    page_icon="",
+    page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 API_BASE = "http://localhost:8888"
 
-# === Modern CSS (from Code 2) ===
+# === Modern CSS ===
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -38,7 +37,7 @@ st.markdown("""
     .footer {text-align: center; color: #64748b; font-size: 0.85rem; padding: 2rem 0; border-top: 1px solid rgba(94, 234, 212, 0.1); margin-top: 3rem;}
     .footer-highlight {color: #5eead4; font-weight: 600;}
     .stSpinner > div {border-top-color: #5eead4 !important;}
-    .block-container {padding-bottom: 6rem;}  /* Make room for fixed input */
+    .block-container {padding-bottom: 6rem;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -47,7 +46,7 @@ for key in ['messages', 'citations', 'initialized', 'auto_init_done', 'study_mat
     if key not in st.session_state:
         st.session_state[key] = [] if key in ['messages', 'citations', 'study_materials'] else False
 
-# === Helper Functions (unchanged) ===
+# === Helper Functions ===
 def check_health(): 
     try: 
         return requests.get(f"{API_BASE}/academic/health", timeout=5).status_code == 200 
@@ -67,7 +66,11 @@ def check_vector_store_status():
 def initialize_system(force_rebuild=False):
     try:
         with st.spinner("Processing PDFs..."):
-            r = requests.post(f"{API_BASE}/academic/init", json={"pdf_dir": "./backend/data/pdfs/", "force_rebuild": force_rebuild}, timeout=300)
+            r = requests.post(
+                f"{API_BASE}/academic/init", 
+                json={"pdf_dir": "data/pdfs/", "force_rebuild": force_rebuild}, 
+                timeout=300
+            )
             if r.status_code == 200:
                 data = r.json()
                 st.session_state.initialized = True
@@ -78,79 +81,127 @@ def initialize_system(force_rebuild=False):
 
 def send_message(question: str, top_k: int = 5):
     try:
-        r = requests.post(f"{API_BASE}/academic/chat", json={"question": question, "top_k": top_k}, timeout=120)
+        r = requests.post(
+            f"{API_BASE}/academic/chat", 
+            json={"question": question, "top_k": top_k}, 
+            timeout=120
+        )
         return r.json() if r.status_code == 200 else {"answer": "Error", "citations": []}
-    except:
+    except Exception as e:
+        logger.error(f"Error sending message: {e}")
         return {"answer": "Connection error", "citations": []}
+
+# === Auto-Initialize on First Load ===
+if not st.session_state.auto_init_done:
+    st.session_state.auto_init_done = True
+    
+    if check_health():
+        populated, count = check_vector_store_status()
+        
+        if populated and count > 0:
+            st.session_state.initialized = True
+            st.success(f"✅ Knowledge base loaded! ({count} chunks available)")
+            logger.info(f"Auto-init: Vector store already populated with {count} chunks")
+        else:
+            logger.info("Auto-init: Vector store empty, initializing...")
+            st.info("🔄 First-time setup: Processing academic documents...")
+            success, msg, final_count, skipped = initialize_system(force_rebuild=False)
+            
+            if success:
+                st.session_state.initialized = True
+                st.success(f"✅ System initialized! {final_count} chunks loaded")
+                logger.info(f"Auto-init complete: {final_count} chunks")
+            else:
+                st.error(f"❌ Initialization failed: {msg}")
+                logger.error(f"Auto-init failed: {msg}")
+    else:
+        st.error("❌ Backend is offline. Please start the FastAPI server.")
 
 # === Sidebar ===
 with st.sidebar:
-    st.markdown("# SUNY Academic Assistant")
+    st.markdown("# 📚 SUNY Academic Assistant")
     st.markdown("<small style='color: #64748b;'>RAG + Study Tools</small>", unsafe_allow_html=True)
     st.markdown("---")
 
     healthy = check_health()
     st.markdown("### System Status")
     if healthy:
-        st.success("Backend Connected")
+        st.success("✅ Backend Connected")
+        populated, count = check_vector_store_status()
+        if populated:
+            st.success(f"✅ Knowledge Base Ready ({count} chunks)")
+            st.session_state.initialized = True
+        else:
+            st.warning("⚠️ Knowledge Base Empty")
+            st.session_state.initialized = False
     else:
-        st.error("Backend Offline")
-
-    if st.session_state.initialized:
-        st.success("Knowledge Base Ready")
-    else:
-        st.warning("Not Initialized")
-
-    col1, col2 = st.columns([3,1])
-    with col1:
-        if st.button("Initialize System"):
-            success, msg, count, _ = initialize_system(st.checkbox("Force rebuild", key="force_cb"))
-            if success:
-                st.success(msg)
-                if count: st.info(f"Loaded {count} chunks")
-                time.sleep(1.5)
-                st.rerun()
-            else:
-                st.error(msg)
+        st.error("❌ Backend Offline")
+        st.session_state.initialized = False
 
     st.markdown("---")
-    st.markdown("### Settings")
-    top_k = st.slider("Retrieval count", 1, 10, 5, key="top_k_slider")
-    if st.button("Clear Academic Chat"):
+    st.markdown("### 🔧 Initialize System")
+    
+    force_rebuild = st.checkbox("🔄 Force Rebuild (Clear & Reprocess All)", key="force_cb")
+    
+    if force_rebuild:
+        st.warning("⚠️ This will delete existing data and rebuild from scratch")
+    
+    if st.button("🚀 Initialize System", type="primary", use_container_width=True):
+        if not healthy:
+            st.error("Cannot initialize: Backend is offline")
+        else:
+            with st.spinner("Processing PDFs..."):
+                success, msg, count, skipped = initialize_system(force_rebuild)
+                
+                if success:
+                    if skipped:
+                        st.info(f"ℹ️ {msg}")
+                    else:
+                        st.success(f"✅ {msg}")
+                    
+                    if count > 0:
+                        st.info(f"📊 Vector store now has {count} chunks")
+                    
+                    time.sleep(1.5)
+                    st.rerun()
+                else:
+                    st.error(f"❌ {msg}")
+
+    st.markdown("---")
+    st.markdown("### ⚙️ Settings")
+    top_k = st.slider("📊 Retrieval Count", 1, 10, 5, key="top_k_slider", 
+                      help="Number of document chunks to retrieve per query")
+    
+    if st.button("🗑️ Clear Academic Chat", use_container_width=True):
         st.session_state.messages = []
         st.session_state.citations = []
+        st.success("Chat cleared!")
+        time.sleep(0.5)
         st.rerun()
 
-# === Auto Init ===
-if not st.session_state.auto_init_done and healthy:
-    st.session_state.auto_init_done = True
-    populated, count = check_vector_store_status()
-    if populated:
-        st.session_state.initialized = True  # ← ADD THIS LINE
-        st.success(f"Knowledge base ready! ({count} chunks loaded)")
-    else:
-        with st.spinner("First-time setup: Processing academic documents..."):
-            success, msg, count, skipped = initialize_system(False)
-            if success:
-                st.success(f"Initialized! {count} chunks loaded")
-                st.session_state.initialized = True
-
-    
 # === TABS ===
-tab1, tab2 = st.tabs(["Academic Guidance Chat", "Study Tools"])
+tab1, tab2 = st.tabs(["💬 Academic Guidance Chat", "📖 Study Tools"])
 
 # === TAB 1: Academic Chat ===
 with tab1:
-    st.markdown("# Academic Guidance Chat")
+    st.markdown("# 💬 Academic Guidance Chat")
+    
+    if not st.session_state.initialized:
+        st.warning("⚠️ Please initialize the system first using the sidebar")
+        st.stop()
 
+    # Display chat messages
     for msg in st.session_state.messages:
         if msg["role"] == "user":
-            st.markdown(f'<div class="chat-message user-message"><strong>You</strong><br>{msg["content"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-message user-message"><strong>You</strong><br>{msg["content"]}</div>', 
+                       unsafe_allow_html=True)
         else:
-            st.markdown(f'<div class="chat-message assistant-message"><strong>AI Advisor</strong><br>{msg["content"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-message assistant-message"><strong>🤖 AI Advisor</strong><br>{msg["content"]}</div>', 
+                       unsafe_allow_html=True)
 
+    # Display citations
     if st.session_state.citations:
-        with st.expander("View Sources", expanded=False):
+        with st.expander("📚 View Sources", expanded=False):
             for i, c in enumerate(st.session_state.citations, 1):
                 st.markdown(f"""
                 <div class="citation-box">
@@ -159,25 +210,31 @@ with tab1:
                 </div>
                 """, unsafe_allow_html=True)
 
-
-    user_prompt = st.text_input("Ask about courses, requirements, policies...", key="chat_text_tab")
-    if st.button("Send", key="send_tab"):
+    # Chat input
+    user_prompt = st.text_input("Ask about courses, requirements, policies...", 
+                                key="chat_text_tab",
+                                placeholder="e.g., What are the CS major requirements?")
+    
+    if st.button("📤 Send", key="send_tab", type="primary") or (user_prompt and user_prompt != st.session_state.get('last_prompt', '')):
         if user_prompt:
+            st.session_state.last_prompt = user_prompt
             st.session_state.messages.append({"role": "user", "content": user_prompt})
-            with st.spinner("Searching knowledge base..."):
+            
+            with st.spinner("🔍 Searching knowledge base..."):
                 resp = send_message(user_prompt, st.session_state.get("top_k_slider", 5))
                 st.session_state.messages.append({"role": "assistant", "content": resp.get("answer", "No answer")})
                 st.session_state.citations = resp.get("citations", [])
+            
             st.rerun()
 
-# === TAB 2: Study Tools – 100% WORKING, NO NESTED EXPANDERS ===
+# === TAB 2: Study Tools ===
 with tab2:
-    st.markdown("# Study Tools")
+    st.markdown("# 📖 Study Tools")
     st.markdown("### Upload once → use any tool below")
 
-    # === Upload ===
+    # Upload section
     uploaded = st.file_uploader(
-        "Upload PDF / TXT files",
+        "📄 Upload PDF / TXT files",
         type=["pdf", "txt"],
         accept_multiple_files=True,
         key="study_upload",
@@ -185,40 +242,41 @@ with tab2:
     )
 
     if uploaded:
-        with st.spinner("Reading files..."):
+        with st.spinner("📖 Reading files..."):
             for file in uploaded:
                 if file.type == "application/pdf":
                     try:
                         from PyPDF2 import PdfReader
                         reader = PdfReader(file)
                         text = "\n".join([p.extract_text() or "" for p in reader.pages if p.extract_text()])
-                    except:
+                    except Exception as e:
+                        logger.error(f"Error reading PDF {file.name}: {e}")
                         text = "[Could not read PDF]"
                 else:
                     text = file.read().decode("utf-8", errors="ignore")
 
                 if text.strip() and text not in st.session_state.study_materials:
                     st.session_state.study_materials.append(text)
-                    st.success(f"Loaded: **{file.name}**")
+                    st.success(f"✅ Loaded: **{file.name}**")
 
     if not st.session_state.study_materials:
-        st.info("Upload your study material to unlock all tools")
+        st.info("📤 Upload your study material to unlock all tools")
         st.stop()
 
     total_words = sum(len(t.split()) for t in st.session_state.study_materials)
-    st.caption(f"Ready: {len(st.session_state.study_materials)} file(s) • ~{total_words:,} words")
+    st.caption(f"✅ Ready: {len(st.session_state.study_materials)} file(s) • ~{total_words:,} words")
 
     material_text = "\n\n".join(st.session_state.study_materials)
 
     # === 1. Flashcards ===
-    with st.expander("Flashcards – Generate & Review", expanded=False):
+    with st.expander("🎴 Flashcards – Generate & Review", expanded=False):
         col1, col2 = st.columns([3, 1])
         with col1:
-            topic_fc = st.text_input("Topic (optional)", placeholder="e.g., Attention", key="fc_topic")
+            topic_fc = st.text_input("Topic (optional)", placeholder="e.g., Attention Mechanism", key="fc_topic")
         with col2:
             count_fc = st.selectbox("Cards", [2, 4, 6, 8, 10], index=2, key="fc_count")
 
-        if st.button("Generate Flashcards", type="primary", use_container_width=True):
+        if st.button("🎴 Generate Flashcards", type="primary", use_container_width=True):
             with st.spinner("Creating flashcards..."):
                 r = requests.post(f"{API_BASE}/study/flashcards", json={
                     "topic": topic_fc or "key concepts",
@@ -227,7 +285,7 @@ with tab2:
                 })
                 if r.status_code == 200:
                     st.session_state.flashcards = r.json().get("flashcards", [])
-                    st.success(f"{len(st.session_state.flashcards)} cards ready")
+                    st.success(f"✅ {len(st.session_state.flashcards)} cards ready!")
 
         if st.session_state.get("flashcards"):
             st.markdown("### Your Flashcards")
@@ -242,15 +300,15 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
 
-    # === 2. Practice Quiz (NO NESTED EXPANDERS!) ===
-    with st.expander("Practice Quiz – Test Yourself", expanded=False):
+    # === 2. Practice Quiz ===
+    with st.expander("✅ Practice Quiz – Test Yourself", expanded=False):
         col1, col2 = st.columns([3, 1])
         with col1:
             topic_q = st.text_input("Quiz topic (optional)", placeholder="e.g., Transformers", key="quiz_topic")
         with col2:
             num_q = st.selectbox("Questions", [2, 4, 6, 8, 10], index=0, key="quiz_num")
 
-        if st.button("Generate Quiz", type="primary", use_container_width=True):
+        if st.button("✅ Generate Quiz", type="primary", use_container_width=True):
             with st.spinner("Generating quiz..."):
                 r = requests.post(f"{API_BASE}/study/quiz", json={
                     "topic": topic_q or "core concepts",
@@ -259,63 +317,66 @@ with tab2:
                 })
                 if r.status_code == 200:
                     st.session_state.quiz = r.json().get("quiz", [])
-                    st.success("Quiz ready!")
+                    st.success("✅ Quiz ready!")
 
         if st.session_state.get("quiz"):
             for i, q in enumerate(st.session_state.quiz):
                 st.markdown(f"**Q{i+1}.** {q.get('question')}")
                 for j, opt in enumerate(q.get("options", [])):
                     if j == q.get("correct_index"):
-                        st.markdown(f'<div class="correct-answer">Correct: {opt}</div>', unsafe_allow_html=True)
+                        st.markdown(f'<span style="color:#5eead4;">✅ {opt}</span>', unsafe_allow_html=True)
                     else:
-                        st.markdown(f'<span style="color:#94a3b8;">{opt}</span>', unsafe_allow_html=True)
+                        st.markdown(f'<span style="color:#94a3b8;">• {opt}</span>', unsafe_allow_html=True)
 
-                # Explanation with HTML <details> instead of st.expander
                 explanation = q.get("explanation", "")
                 if explanation:
                     st.markdown(f"""
                     <details style="margin:1rem 0;">
-                        <summary style="color:#5eead4; cursor:pointer; font-weight:600;">Show Explanation</summary>
+                        <summary style="color:#5eead4; cursor:pointer; font-weight:600;">💡 Show Explanation</summary>
                         <p style="color:#cbd5e1; margin-top:0.5rem; padding-left:0.5rem;">{explanation}</p>
                     </details>
                     """, unsafe_allow_html=True)
                 st.markdown("---")
 
     # === 3. Summary ===
-    with st.expander("Summary – Key Points", expanded=False):
-        if st.button("Generate Summary", type="primary", use_container_width=True):
+    with st.expander("📝 Summary – Key Points", expanded=False):
+        if st.button("📝 Generate Summary", type="primary", use_container_width=True):
             with st.spinner("Summarizing..."):
                 r = requests.post(f"{API_BASE}/study/summary", json={"context": material_text})
                 if r.status_code == 200:
                     st.markdown("### Summary")
                     st.write(r.json().get("summary", ""))
-                    st.code(r.json().get("summary", ""), language=None)
 
     # === 4. Concept Explainer ===
-    with st.expander("Concept Explainer", expanded=False):
-        concept = st.text_input("What do you want explained?", placeholder="e.g., Positional Encoding", key="explain_concept")
-        if st.button("Explain Concept", type="primary", use_container_width=True) and concept:
+    with st.expander("💡 Concept Explainer", expanded=False):
+        concept = st.text_input("What do you want explained?", 
+                               placeholder="e.g., Positional Encoding", 
+                               key="explain_concept")
+        if st.button("💡 Explain Concept", type="primary", use_container_width=True) and concept:
             with st.spinner("Explaining..."):
-                r = requests.post(f"{API_BASE}/study/explain", json={"concept": concept, "context": material_text})
+                r = requests.post(f"{API_BASE}/study/explain", 
+                                json={"concept": concept, "context": material_text})
                 if r.status_code == 200:
                     st.markdown(f"### {concept}")
                     st.write(r.json().get("explanation", ""))
 
     # === 5. Study Schedule ===
-    with st.expander("Study Schedule – Personalized Plan", expanded=False):
+    with st.expander("📅 Study Schedule – Personalized Plan", expanded=False):
         col1, col2 = st.columns(2)
         with col1:
             exam_date = st.date_input("Exam date", value=date.today(), min_value=date.today())
         with col2:
             hours_per_day = st.slider("Hours/day", 1, 8, 4)
 
-        focus_topics = st.text_area("Focus topics (optional)", placeholder="e.g., Attention, RNNs", height=80)
+        focus_topics = st.text_area("Focus topics (optional)", 
+                                   placeholder="e.g., Attention, RNNs", 
+                                   height=80)
         topic_list = [t.strip() for t in focus_topics.split(",") if t.strip()]
 
-        if st.button("Build Study Schedule", type="primary", use_container_width=True):
+        if st.button("📅 Build Study Schedule", type="primary", use_container_width=True):
             days = (exam_date - date.today()).days
             if days < 1:
-                st.error("Pick a future date")
+                st.error("❌ Pick a future date")
             else:
                 with st.spinner("Planning your study schedule..."):
                     r = requests.post(f"{API_BASE}/study/schedule", json={
@@ -326,7 +387,7 @@ with tab2:
                     })
                     if r.status_code == 200:
                         st.session_state.schedule = r.json().get("schedule", [])
-                        st.success(f"Plan created for {days} days!")
+                        st.success(f"✅ Plan created for {days} days!")
 
         if st.session_state.get("schedule"):
             st.markdown("### Your Study Schedule")
@@ -335,7 +396,7 @@ with tab2:
                     st.markdown(f"**{day.get('day')} – {day.get('focus')}**")
                     for task in day.get("tasks", []):
                         st.markdown(f"• {task}")
-                    st.caption(f"{day.get('hours', hours_per_day)} hours")
+                    st.caption(f"⏱️ {day.get('hours', hours_per_day)} hours")
                     st.markdown("---")
 
 # === Footer ===

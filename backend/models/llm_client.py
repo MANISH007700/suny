@@ -51,7 +51,7 @@ Remember: You must base your answers strictly on the provided context."""
         try:
             # Build context string from retrieved chunks
             context_str = self._build_context_string(context[:top_k])
-            
+            import pdb; pdb.set_trace()
             # Build messages
             messages = [
                 {"role": "system", "content": self.get_system_prompt()},
