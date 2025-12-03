@@ -1,162 +1,179 @@
-# backend/routers/study_tools.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
+from datetime import date
 import json
 import requests
-from models.llm_client import LLMClient
 
-# router = APIRouter(prefix="/study", tags=["study"])
 router = APIRouter()
 
 class FlashcardRequest(BaseModel):
     topic: str = "key concepts"
-    count: int = 8
+    count: int = 5
     context: str
 
 class QuizRequest(BaseModel):
     topic: str = "key concepts"
-    num_questions: int = 6
+    num_questions: int = 5
     context: str
 
-class SummaryRequest(BaseModel):
+class ScheduleRequest(BaseModel):
+    exam_date: date
+    hours_per_day: int = 3
+    topics: List[str] = []
     context: str
-
-class ExplainRequest(BaseModel):
-    concept: str
-    context: str
-
 
 @router.post("/flashcards")
 async def generate_flashcards(req: FlashcardRequest):
+    from models.llm_client import LLMClient
     llm = LLMClient()
+    
+    prompt = f"""
+    Generate {req.count} high-quality flashcards from the following study material.
+    Topic focus: {req.topic}
 
-    # FIXED: Use raw string or escape braces properly
-    prompt = f"""Generate {req.count} high-quality, concise flashcards from the study material below.
-Focus on: {req.topic}
+    Material:
+    {req.context[:25000]}
 
-Study Material:
-{req.context[:25000]}
-
-Return ONLY a valid JSON array of objects with this exact structure:
-[
-  {{"question": "What is attention mechanism?", "answer": "A technique that..."}},
-  {{"question": "Name 3 types of attention", "answer": "Self-attention, multi-head..."}}
-]
-
-Do not include any explanations, markdown, or extra text. Only valid JSON."""
+    Return ONLY a valid JSON array like:
+    [{{"question": "...", "answer": "..."}}, ...]
+    """
 
     try:
         messages = [
-            {"role": "system", "content": "You are an expert flashcard creator. Always respond with clean, parseable JSON only."},
+            {"role": "system", "content": "You are an expert study coach. Create clear, effective short flashcards."},
             {"role": "user", "content": prompt}
         ]
-
-        response = llm._raw_request(messages, max_tokens=4000, temperature=0.3)
-        json_text = _extract_json(response)
-
-        flashcards = json.loads(json_text)
+        payload = {"model": llm.model, "messages": messages, "temperature": 0.2, "max_tokens": 5000}
+        import requests
+        resp = requests.post(llm.base_url, headers=llm._get_headers(), json=payload)
+        resp.raise_for_status()
+        content = resp.json()['choices'][0]['message']['content']
+        
+        # Clean JSON
+        json_str = content
+        if "```json" in content:
+            json_str = content.split("```json")[1].split("```")[0]
+        elif "```" in content:
+            json_str = content.split("```")[1].split("```")[0]
+            
+        flashcards = json.loads(json_str)
         return {"flashcards": flashcards}
-
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to generate flashcards: {str(e)}")
-
+        raise HTTPException(500, f"Flashcard generation failed: {str(e)}")
 
 @router.post("/quiz")
 async def generate_quiz(req: QuizRequest):
+    from models.llm_client import LLMClient
     llm = LLMClient()
+    
+    prompt = f"""
+    Create {req.num_questions} challenging but fair multiple-choice questions from the documents.
+    Topic: {req.topic}
 
-    prompt = f"""Create {req.num_questions} high-quality multiple-choice questions from the material.
-Topic focus: {req.topic}
+    Study material:
+    {req.context[:25000]}
 
-Material:
-{req.context[:25000]}
-
-Return ONLY valid JSON in this exact format:
-[
-  {{
-    "question": "What is the capital of France?",
-    "options": ["London", "Berlin", "Paris", "Madrid"],
-    "correct_index": 2,
-    "explanation": "Paris is the capital city of France."
-  }}
-]
-
-No markdown, no extra text, only JSON."""
+    Return valid JSON:
+    [
+      {{
+        "question": "...",
+        "options": ["A", "B", "C", "D"],
+        "correct_index": 0,
+        "explanation": "..."
+      }}
+    ]
+    """
 
     try:
         messages = [
-            {"role": "system", "content": "You are a professional quiz creator. Return clean JSON only."},
+            {"role": "system", "content": "You are a master quiz creator."},
             {"role": "user", "content": prompt}
         ]
-
-        response = llm._raw_request(messages, max_tokens=3000, temperature=0.5)
-        json_text = _extract_json(response)
-
-        quiz = json.loads(json_text)
+        payload = {"model": llm.model, "messages": messages, "temperature": 0.5, "max_tokens": 2000}
+        import requests
+        resp = requests.post(llm.base_url, headers=llm._get_headers(), json=payload)
+        resp.raise_for_status()
+        content = resp.json()['choices'][0]['message']['content']
+        
+        json_str = content
+        if "```json" in content: json_str = content.split("```json")[1].split("```")[0]
+        elif "```" in content: json_str = content.split("```")[1].split("```")[0]
+            
+        quiz = json.loads(json_str)
         return {"quiz": quiz}
-
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Quiz generation failed: {str(e)}")
-
+        raise HTTPException(500, f"Quiz generation failed: {str(e)}")
 
 @router.post("/summary")
-async def summarize(req: SummaryRequest):
+async def summarize(req: Dict):
+    from models.llm_client import LLMClient
     llm = LLMClient()
-    prompt = f"Summarize the following study material in 300-500 words, clearly and accurately:\n\n{req.context[:30000]}"
-
-    try:
-        messages = [{"role": "system", "content": "You are an expert summarizer."}, {"role": "user", "content": prompt}]
-        response = llm._raw_request(messages, max_tokens=1000)
-        return {"summary": response.strip()}
-    except Exception as e:
-        raise HTTPException(500, detail=str(e))
-
+    messages = [
+        {"role": "system", "content": "Summarize clearly and concisely."},
+        {"role": "user", "content": f"Summarize this study material in 300-500 words:\n\n{req.get('context', '')[:30000]}"}
+    ]
+    payload = {"model": llm.model, "messages": messages, "temperature": 0.2}
+    resp = requests.post(llm.base_url, headers=llm._get_headers(), json=payload)
+    resp.raise_for_status()
+    return {"summary": resp.json()['choices'][0]['message']['content']}
 
 @router.post("/explain")
-async def explain(req: ExplainRequest):
+async def explain(req: Dict):
+    from models.llm_client import LLMClient
     llm = LLMClient()
-    prompt = f"Explain the concept '{req.concept}' clearly and thoroughly using only the provided study material:\n\n{req.context[:25000]}"
-
-    try:
-        messages = [{"role": "system", "content": "You are a world-class professor."}, {"role": "user", "content": prompt}]
-        response = llm._raw_request(messages, max_tokens=1500, temperature=0.4)
-        return {"explanation": response.strip()}
-    except Exception as e:
-        raise HTTPException(500, detail=str(e))
-
-
-# === Helper Functions ===
-def _extract_json(text: str) -> str:
-    """Extract JSON from LLM response (handles code blocks)"""
-    text = text.strip()
-    if "```json" in text:
-        return text.split("```json")[1].split("```")[0].strip()
-    if "```" in text:
-        return text.split("```")[1].split("```")[0].strip()
-    # If no code block, assume it's raw JSON
-    start = text.find("[")
-    end = text.rfind("]") + 1
-    if start != -1 and end > start:
-        return text[start:end]
-    return text
-
-
-# Add this method to LLMClient if not exists
-# → Add to models/llm_client.py
-def _raw_request(self, messages: List[Dict], max_tokens: int = 1000, temperature: float = 0.3) -> str:
-    payload = {
-        "model": self.model,
-        "messages": messages,
-        "max_tokens": max_tokens,
-        "temperature": temperature
-    }
-    headers = {
-        "Authorization": f"Bearer {self.api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost:8888",
-        "X-Title": "SUNY Study Tools"
-    }
-    resp = requests.post(self.base_url, json=payload, headers=headers, timeout=120)
+    messages = [
+        {"role": "system", "content": "Explain concepts like a world-class professor."},
+        {"role": "user", "content": f"Explain '{req['concept']}' clearly using this material:\n\n{req.get('context', '')[:20000]}"}
+    ]
+    payload = {"model": llm.model, "messages": messages, "temperature": 0.4}
+    resp = requests.post(llm.base_url, headers=llm._get_headers(), json=payload)
     resp.raise_for_status()
-    return resp.json()['choices'][0]['message']['content']
+    return {"explanation": resp.json()['choices'][0]['message']['content']}
+
+@router.post("/schedule")
+async def create_schedule(req: ScheduleRequest):
+    from models.llm_client import LLMClient
+    llm = LLMClient()
+    
+    today = date.today()
+    days_remaining = max((req.exam_date - today).days, 1)
+    topics_text = ", ".join(req.topics) if req.topics else "key topics from the material"
+    
+    prompt = f"""
+    You are an elite study planner. Build a focused day-by-day schedule to prepare for an exam in {days_remaining} day(s).
+    Exam date: {req.exam_date.isoformat()}
+    Available study hours per day: {req.hours_per_day}
+    Focus topics: {topics_text}
+
+    Material to leverage:
+    {req.context[:25000]}
+
+    Return ONLY valid JSON with this structure:
+    [
+      {{"day": "Day 1 (Mon)", "focus": "Topic", "tasks": ["task 1","task 2"], "hours": 3}},
+      ...
+    ]
+    Ensure the plan spans all {days_remaining} day(s) leading up to the exam and balances review + practice.
+    """
+    
+    try:
+        messages = [
+            {"role": "system", "content": "You create realistic, motivating study plans based on provided material."},
+            {"role": "user", "content": prompt}
+        ]
+        payload = {"model": llm.model, "messages": messages, "temperature": 0.3, "max_tokens": 2000}
+        resp = requests.post(llm.base_url, headers=llm._get_headers(), json=payload)
+        resp.raise_for_status()
+        content = resp.json()['choices'][0]['message']['content']
+        
+        json_str = content
+        if "```json" in content:
+            json_str = content.split("```json")[1].split("```")[0]
+        elif "```" in content:
+            json_str = content.split("```")[1].split("```")[0]
+        
+        schedule = json.loads(json_str)
+        return {"schedule": schedule, "days": days_remaining}
+    except Exception as e:
+        raise HTTPException(500, f"Schedule generation failed: {str(e)}")

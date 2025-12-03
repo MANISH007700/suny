@@ -139,17 +139,3 @@ Please provide a detailed answer based on the context above. Include specific ci
                 "snippet": chunk.get('text', '')[:200] + "..."
             })
         return citations
-
-    def _raw_request(self, messages: List[Dict], max_tokens: int = 1000, temperature: float = 0.3) -> str:
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "max_tokens": max_tokens,
-            "temperature": temperature
-        }
-        headers = self._get_headers()
-        resp = requests.post(self.base_url, json=payload, headers=headers, timeout=120)
-        if resp.status_code == 429:
-            raise Exception("Rate limited by OpenRouter. Please wait 30-60 seconds.")
-        resp.raise_for_status()
-        return resp.json()['choices'][0]['message']['content']
