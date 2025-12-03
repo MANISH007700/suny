@@ -1,3 +1,4 @@
+# models/rag_pipeline.py
 import os
 from typing import List, Dict
 import logging
@@ -69,10 +70,8 @@ class RAGPipeline:
         self.chroma_client = chromadb.PersistentClient(path=persist_dir)
         
         try:
-            self.vector_store = self.chroma_client.get_collection(
-                name="academic_documents"
-            )
-            logger.info("Loaded existing Chroma collection")
+            self.vector_store = self.chroma_client.get_collection(name="academic_documents")
+            logger.info("Successfully loaded existing Chroma collection")
         except:
             self.vector_store = self.chroma_client.create_collection(
                 name="academic_documents",
@@ -82,110 +81,95 @@ class RAGPipeline:
         
         self.vector_store_type = "chroma"
         logger.info("Using Chroma vector store")
-    
+
     def is_vector_store_populated(self) -> bool:
         """Check if vector store already has documents"""
         try:
             if self.vector_store_type == "chroma":
                 count = self.vector_store.count()
-                logger.info(f"Vector store contains {count} documents")
+                logger.info(f"Chroma vector store has {count} chunks")
                 return count > 0
             elif self.vector_store_type == "pinecone":
                 stats = self.vector_store.describe_index_stats()
                 count = stats.get('total_vector_count', 0)
-                logger.info(f"Vector store contains {count} documents")
+                logger.info(f"Pinecone vector store has {count} vectors")
                 return count > 0
         except Exception as e:
-            logger.error(f"Error checking vector store: {e}")
+            logger.error(f"Error checking vector store population: {e}")
             return False
         return False
     
     def initialize_from_pdfs(self, pdf_dir: str = "./data/pdfs/", force_rebuild: bool = False):
         """
-        Load PDFs, extract text, chunk, embed, and store in vector DB
-        
-        Args:
-            pdf_dir: Directory containing PDF files
+        Load PDFs, chunk, embed, and store in vector DB
         """
-        logger.info(f"Starting PDF initialization from {pdf_dir}")
+        logger.info(f"Starting PDF initialization (force_rebuild={force_rebuild}) from {pdf_dir}")
         
         if not os.path.exists(pdf_dir):
-            os.makedirs(pdf_dir)
-            logger.warning(f"Created empty PDF directory at {pdf_dir}")
-            return {"status": "success", "message": "No PDFs to process", "count": 0}
-        
-        pdf_files = [f for f in os.listdir(pdf_dir) if f.endswith('.pdf')]
-        
+            os.makedirs(pdf_dir, exist_ok=True)
+            logger.warning(f"PDF directory created: {pdf_dir}")
+            return {"status": "success", "message": "No PDFs found", "count": 0}
+
+        pdf_files = [f for f in os.listdir(pdf_dir) if f.lower().endswith('.pdf')]
         if not pdf_files:
-            logger.warning("No PDF files found")
-            return {"status": "success", "message": "No PDFs to process", "count": 0, "skipped": False}
-        
+            logger.info("No PDF files found in directory")
+            return {"status": "success", "message": "No PDFs to process", "count": 0}
+
         logger.info(f"Found {len(pdf_files)} PDF files")
-        
+
         all_chunks = []
         all_metadatas = []
-        
+
         for pdf_file in pdf_files:
             pdf_path = os.path.join(pdf_dir, pdf_file)
             logger.info(f"Processing: {pdf_file}")
-            
             try:
-                # Extract text
                 text = self.pdf_loader.load_pdf(pdf_path)
-                logger.info(f"Extracted {len(text)} characters from {pdf_file}")
-                
-                # Chunk text
                 chunks = self.text_splitter.split_text(text)
-                logger.info(f"Created {len(chunks)} chunks from {pdf_file}")
-                
-                # Store chunks with metadata
+                logger.info(f"Extracted {len(chunks)} chunks from {pdf_file}")
+
                 for chunk in chunks:
                     all_chunks.append(chunk)
-                    all_metadatas.append({
-                        "source": pdf_file,
-                        "chunk_size": len(chunk)
-                    })
-                
+                    all_metadatas.append({"source": pdf_file, "chunk_size": len(chunk)})
             except Exception as e:
-                logger.error(f"Error processing {pdf_file}: {str(e)}")
-                continue
-        
+                logger.error(f"Failed to process {pdf_file}: {e}")
+
         if not all_chunks:
-            logger.warning("No chunks extracted from PDFs")
-            return {"status": "success", "message": "No content extracted", "count": 0, "skipped": False}
-        
-        logger.info(f"Total chunks to embed: {len(all_chunks)}")
-        
-        # Generate embeddings
+            return {"status": "success", "message": "No text extracted from PDFs", "count": 0}
+
         embeddings = self.embedding_model.embed_batch(all_chunks)
-        logger.info("Generated embeddings for all chunks")
-        
-        # Store in vector database
-        self._store_embeddings(all_chunks, embeddings, all_metadatas)
-        
-        logger.info(f"Successfully processed {len(pdf_files)} PDFs with {len(all_chunks)} chunks")
-        
+        logger.info(f"Generated {len(embeddings)} embeddings")
+
+        # THIS IS THE KEY: Pass force_rebuild down
+        self._store_embeddings(all_chunks, embeddings, all_metadatas, force_rebuild=force_rebuild)
+
+        final_count = self.vector_store.count() if self.vector_store_type == "chroma" else len(all_chunks)
+        logger.info(f"Initialization complete. Total chunks: {final_count}")
+
         return {
             "status": "success",
-            "message": f"Processed {len(pdf_files)} PDFs",
-            "count": len(all_chunks),
-            "skipped": False
+            "message": f"Successfully loaded {len(pdf_files)} PDFs",
+            "count": len(all_chunks)
         }
-    
+
     def _store_embeddings(self, chunks: List[str], embeddings: List[List[float]], 
-                         metadatas: List[Dict]):
-        """Store embeddings in vector database"""
+                         metadatas: List[Dict], force_rebuild: bool = False):
+        """Store embeddings safely — only delete if force_rebuild=True"""
         if self.vector_store_type == "chroma":
-            # Clear existing data
-            try:
-                self.chroma_client.delete_collection("academic_documents")
-                self.vector_store = self.chroma_client.create_collection(
-                    name="academic_documents"
-                )
-            except:
-                pass
-            
-            # Add to Chroma
+            if force_rebuild:
+                try:
+                    self.chroma_client.delete_collection("academic_documents")
+                    logger.info("Deleted existing collection (force rebuild)")
+                except:
+                    pass
+                self.vector_store = self.chroma_client.create_collection("academic_documents")
+            else:
+                # Safely reuse existing collection
+                try:
+                    self.vector_store = self.chroma_client.get_collection("academic_documents")
+                except:
+                    self.vector_store = self.chroma_client.create_collection("academic_documents")
+
             ids = [f"chunk_{i}" for i in range(len(chunks))]
             self.vector_store.add(
                 embeddings=embeddings,
@@ -193,71 +177,45 @@ class RAGPipeline:
                 metadatas=metadatas,
                 ids=ids
             )
-            logger.info("Stored embeddings in Chroma")
-        
-        elif self.vector_store_type == "pinecone":
-            # Prepare vectors for Pinecone
-            vectors = []
-            for i, (embedding, chunk, metadata) in enumerate(zip(embeddings, chunks, metadatas)):
-                vectors.append({
-                    "id": f"chunk_{i}",
-                    "values": embedding,
-                    "metadata": {**metadata, "text": chunk}
-                })
-            
-            # Upsert to Pinecone
-            self.vector_store.upsert(vectors=vectors)
-            logger.info("Stored embeddings in Pinecone")
-    
+            logger.info(f"Added {len(chunks)} chunks → total: {self.vector_store.count()}")
+
     def query(self, question: str, top_k: int = 5) -> Dict:
-        """
-        Query the RAG system
-        
-        Args:
-            question: User's question
-            top_k: Number of documents to retrieve
-        
-        Returns:
-            Dict with answer and citations
-        """
-        logger.info(f"Processing query: {question}")
-        
-        # Generate query embedding
+        """Query the knowledge base"""
+        logger.info(f"RAG Query: {question[:100]}...")
+
+        if not self.is_vector_store_populated():
+            return {
+                "answer": "The knowledge base is empty. Please initialize the system with academic PDFs first.",
+                "citations": []
+            }
+
         query_embedding = self.embedding_model.embed_text(question)
-        
-        # Retrieve relevant documents
+
         if self.vector_store_type == "chroma":
             results = self.vector_store.query(
                 query_embeddings=[query_embedding],
-                n_results=top_k
+                n_results=top_k,
+                include=["metadatas", "documents"]
             )
-            
-            context = []
-            for i in range(len(results['documents'][0])):
-                context.append({
-                    "text": results['documents'][0][i],
-                    "metadata": results['metadatas'][0][i]
-                })
-        
-        elif self.vector_store_type == "pinecone":
+            context = [
+                {
+                    "text": doc,
+                    "metadata": meta
+                }
+                for doc, meta in zip(results['documents'][0], results['metadatas'][0])
+            ]
+        else:  # pinecone
             results = self.vector_store.query(
                 vector=query_embedding,
                 top_k=top_k,
                 include_metadata=True
             )
-            
-            context = []
-            for match in results['matches']:
-                context.append({
-                    "text": match['metadata'].get('text', ''),
-                    "metadata": {
-                        "source": match['metadata'].get('source', 'Unknown')
-                    }
-                })
-        
-        logger.info(f"Retrieved {len(context)} relevant documents")
-        
-        # Generate response using LLM
-        response = self.llm_client.generate_response(question, context, top_k)
-        
-        return response
+            context = [
+                {
+                    "text": m['metadata'].get('text', ''),
+                    "metadata": {"source": m['metadata'].get('source', 'Unknown')}
+                }
+                for m in results['matches']
+            ]
+
+        return self.llm_client.generate_response(question, context, top_k)

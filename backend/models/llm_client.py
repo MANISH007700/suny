@@ -64,12 +64,7 @@ Please provide a detailed answer based on the context above. Include specific ci
             ]
             
             # Make API request
-            headers = {
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost:8501",
-                "X-Title": "SUNY Academic Guidance System"
-            }
+            headers = self._get_headers()
             
             payload = {
                 "model": self.model,
@@ -115,6 +110,15 @@ Please provide a detailed answer based on the context above. Include specific ci
             logger.error(f"Error generating response: {str(e)}")
             raise
     
+    def _get_headers(self) -> Dict[str, str]:
+        """Headers required for OpenRouter requests"""
+        return {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": os.getenv("APP_BASE_URL", "http://localhost:8501"),
+            "X-Title": "SUNY Academic Guidance System"
+        }
+    
     def _build_context_string(self, context: List[Dict]) -> str:
         """Build formatted context string from retrieved chunks"""
         context_parts = []
@@ -135,3 +139,17 @@ Please provide a detailed answer based on the context above. Include specific ci
                 "snippet": chunk.get('text', '')[:200] + "..."
             })
         return citations
+
+    def _raw_request(self, messages: List[Dict], max_tokens: int = 1000, temperature: float = 0.3) -> str:
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature
+        }
+        headers = self._get_headers()
+        resp = requests.post(self.base_url, json=payload, headers=headers, timeout=120)
+        if resp.status_code == 429:
+            raise Exception("Rate limited by OpenRouter. Please wait 30-60 seconds.")
+        resp.raise_for_status()
+        return resp.json()['choices'][0]['message']['content']
