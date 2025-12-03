@@ -240,3 +240,288 @@ Do not include any other text."""
             if len(answer.split()) < 15 or "i don't have" in answer.lower():
                 return True, "AI response appears insufficient (fallback due to check error)"
             return False, ""
+    
+    # ========== ADVISOR ASSIST TOOLS ==========
+    
+    def generate_outreach_email(self, escalation: Dict, student_profile: Dict) -> str:
+        """Generate personalized outreach email to student"""
+        try:
+            prompt = f"""You are an academic advisor at SUNY. Generate a professional, warm, and personalized outreach email to a student.
+
+STUDENT INFORMATION:
+- Student ID: {student_profile.get('student_id', 'Unknown')}
+- Name: {student_profile.get('name', 'Student')}
+- Major: {student_profile.get('major', 'Undeclared')}
+- GPA: {student_profile.get('gpa', 'N/A')}
+- Risk Level: {student_profile.get('risk_level', 'low')}
+- Total Escalations: {student_profile.get('total_escalations', 0)}
+
+ESCALATION CONTEXT:
+- Question: {escalation.get('question', '')}
+- AI Response: {escalation.get('ai_response', '')}
+- Escalation Reason: {escalation.get('escalation_reason', '')}
+- Status: {escalation.get('status', 'pending')}
+- Priority: {'⭐' * escalation.get('priority', 1)}
+
+TASK:
+Write a professional yet friendly email reaching out to the student. Address their concern, acknowledge their question, and offer to help. The tone should be:
+- Supportive and encouraging
+- Professional but warm
+- Action-oriented (offer next steps)
+- Show that you've reviewed their situation
+
+Include:
+1. Personalized greeting
+2. Reference to their specific question/concern
+3. Acknowledgment of their academic journey
+4. Offer of assistance (meeting, phone call, etc.)
+5. Your contact information placeholder
+6. Professional closing
+
+Keep it concise (200-300 words) and actionable.
+
+Generate ONLY the email content without any additional commentary."""
+
+            headers = self._get_headers()
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 600,
+                "temperature": 0.7
+            }
+            
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
+            response.raise_for_status()
+            
+            data = response.json()
+            return data['choices'][0]['message']['content'].strip()
+            
+        except Exception as e:
+            logger.error(f"Error generating outreach email: {e}")
+            raise
+    
+    def generate_meeting_invitation(self, escalation: Dict, student_profile: Dict, meeting_details: Dict = None) -> str:
+        """Generate meeting invitation text"""
+        try:
+            meeting_info = meeting_details or {}
+            prompt = f"""You are an academic advisor at SUNY. Generate a professional meeting invitation for a student.
+
+STUDENT INFORMATION:
+- Name: {student_profile.get('name', 'Student')}
+- Major: {student_profile.get('major', 'Undeclared')}
+
+MEETING CONTEXT:
+- Regarding: {escalation.get('question', 'Academic advising')}
+- Reason for meeting: {escalation.get('escalation_reason', 'Follow-up discussion')}
+- Suggested duration: {meeting_info.get('duration', '30 minutes')}
+- Format: {meeting_info.get('format', 'In-person or Zoom')}
+
+TASK:
+Create a clear, professional meeting invitation that:
+1. States the purpose clearly
+2. Offers time flexibility
+3. Explains what will be discussed
+4. Provides logistics (format, duration)
+5. Encourages the student to confirm or suggest alternative times
+6. Maintains a welcoming, supportive tone
+
+Keep it professional but friendly (150-200 words).
+
+Generate ONLY the invitation text."""
+
+            headers = self._get_headers()
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 500,
+                "temperature": 0.7
+            }
+            
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
+            response.raise_for_status()
+            
+            data = response.json()
+            return data['choices'][0]['message']['content'].strip()
+            
+        except Exception as e:
+            logger.error(f"Error generating meeting invitation: {e}")
+            raise
+    
+    def generate_session_summary(self, escalation: Dict, student_profile: Dict, session_notes: str = "") -> str:
+        """Generate advising session summary"""
+        try:
+            prompt = f"""You are an academic advisor at SUNY. Create a comprehensive advising session summary.
+
+STUDENT INFORMATION:
+- Name: {student_profile.get('name', 'Student')}
+- Student ID: {student_profile.get('student_id', 'Unknown')}
+- Major: {student_profile.get('major', 'Undeclared')}
+- GPA: {student_profile.get('gpa', 'N/A')}
+
+SESSION CONTEXT:
+- Initial Question/Concern: {escalation.get('question', '')}
+- Discussion Points: {escalation.get('ai_response', '')}
+- Escalation Reason: {escalation.get('escalation_reason', '')}
+
+ADDITIONAL NOTES:
+{session_notes if session_notes else 'Standard advising session'}
+
+TASK:
+Create a professional session summary that includes:
+1. **Date & Purpose**: When and why the meeting occurred
+2. **Topics Discussed**: Key points covered
+3. **Student Concerns**: Main issues raised
+4. **Recommendations Made**: Specific advice given
+5. **Action Items**: What student should do next
+6. **Follow-up**: Any scheduled next steps
+7. **Overall Assessment**: Student's situation and outlook
+
+Format it clearly with sections. Be thorough but concise (300-400 words).
+
+Generate ONLY the summary."""
+
+            headers = self._get_headers()
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 800,
+                "temperature": 0.6
+            }
+            
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
+            response.raise_for_status()
+            
+            data = response.json()
+            return data['choices'][0]['message']['content'].strip()
+            
+        except Exception as e:
+            logger.error(f"Error generating session summary: {e}")
+            raise
+    
+    def generate_recovery_plan(self, escalation: Dict, student_profile: Dict) -> str:
+        """Generate academic recovery plan"""
+        try:
+            prompt = f"""You are an academic advisor at SUNY. Create a detailed academic recovery plan for a student.
+
+STUDENT INFORMATION:
+- Name: {student_profile.get('name', 'Student')}
+- Major: {student_profile.get('major', 'Undeclared')}
+- GPA: {student_profile.get('gpa', 'N/A')}
+- Risk Level: {student_profile.get('risk_level', 'low')}
+- Completed Courses: {', '.join(student_profile.get('completed_courses', [])[:5]) or 'None listed'}
+- Current Courses: {', '.join(student_profile.get('current_courses', [])[:5]) or 'None listed'}
+
+CURRENT SITUATION:
+- Primary Concern: {escalation.get('question', '')}
+- Escalation Reason: {escalation.get('escalation_reason', '')}
+- Number of Prior Escalations: {student_profile.get('total_escalations', 0)}
+
+TASK:
+Create a comprehensive, actionable academic recovery plan that includes:
+
+1. **Current Situation Assessment**: Brief analysis of student's status
+2. **Immediate Priorities (Next 2 Weeks)**: 
+   - 3-4 specific, achievable actions
+3. **Short-term Goals (This Semester)**:
+   - Academic objectives
+   - GPA targets
+   - Course completion plans
+4. **Resources & Support**:
+   - Tutoring centers
+   - Study groups
+   - Office hours
+   - Mental health services (if applicable)
+5. **Timeline & Milestones**:
+   - Weekly check-ins
+   - Mid-semester review
+   - End-of-semester goals
+6. **Success Metrics**:
+   - How to measure progress
+7. **Contingency Plans**:
+   - What to do if struggling
+
+Make it specific, realistic, and encouraging. Show a clear path forward.
+Format with clear sections and bullet points.
+Length: 400-500 words.
+
+Generate ONLY the recovery plan."""
+
+            headers = self._get_headers()
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 1000,
+                "temperature": 0.6
+            }
+            
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=20)
+            response.raise_for_status()
+            
+            data = response.json()
+            return data['choices'][0]['message']['content'].strip()
+            
+        except Exception as e:
+            logger.error(f"Error generating recovery plan: {e}")
+            raise
+    
+    def generate_guidance_notes(self, escalation: Dict, student_profile: Dict, policy_context: str = "") -> str:
+        """Generate personalized guidance notes based on SUNY policies"""
+        try:
+            prompt = f"""You are an academic advisor at SUNY. Create personalized guidance notes for this student.
+
+STUDENT INFORMATION:
+- Name: {student_profile.get('name', 'Student')}
+- Major: {student_profile.get('major', 'Undeclared')}
+- Academic Standing: GPA {student_profile.get('gpa', 'N/A')}, Risk Level: {student_profile.get('risk_level', 'low')}
+
+STUDENT'S SITUATION:
+- Question/Concern: {escalation.get('question', '')}
+- AI Response Provided: {escalation.get('ai_response', '')}
+- Why Escalated: {escalation.get('escalation_reason', '')}
+
+RELEVANT POLICIES:
+{policy_context if policy_context else 'Standard SUNY academic policies apply'}
+
+TASK:
+Create detailed guidance notes that an advisor can reference. Include:
+
+1. **Situation Overview**: Summary of student's concern
+2. **Relevant Policies & Requirements**:
+   - Specific SUNY policies that apply
+   - Important deadlines
+   - Prerequisite requirements
+3. **Recommended Approach**:
+   - Step-by-step guidance
+   - What options the student has
+4. **Key Points to Emphasize**:
+   - Critical information student must understand
+5. **Potential Challenges**:
+   - Issues to watch for
+   - Common misunderstandings
+6. **Follow-up Items**:
+   - What to monitor
+   - When to check in again
+
+Be specific, policy-focused, and practical.
+Format with clear sections and bullet points.
+Length: 300-400 words.
+
+Generate ONLY the guidance notes."""
+
+            headers = self._get_headers()
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 800,
+                "temperature": 0.5
+            }
+            
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
+            response.raise_for_status()
+            
+            data = response.json()
+            return data['choices'][0]['message']['content'].strip()
+            
+        except Exception as e:
+            logger.error(f"Error generating guidance notes: {e}")
+            raise

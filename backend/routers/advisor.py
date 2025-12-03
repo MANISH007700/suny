@@ -327,3 +327,171 @@ async def delete_escalation(escalation_id: str):
         logger.error(f"Error deleting escalation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# ========== ADVISOR ASSIST TOOLS ==========
+
+@router.post("/escalations/{escalation_id}/generate-email")
+async def generate_outreach_email(escalation_id: str):
+    """Generate personalized outreach email for student"""
+    try:
+        escalations = load_escalations()
+        escalation = next((e for e in escalations if e["id"] == escalation_id), None)
+        
+        if not escalation:
+            raise HTTPException(status_code=404, detail="Escalation not found")
+        
+        # Get student profile
+        student_profile = get_or_create_student_profile(escalation["student_id"])
+        
+        # Import LLM client
+        from models.llm_client import LLMClient
+        llm_client = LLMClient()
+        
+        # Generate email
+        email_content = llm_client.generate_outreach_email(escalation, student_profile)
+        
+        logger.info(f"Generated outreach email for escalation {escalation_id}")
+        return {
+            "status": "success",
+            "email": email_content
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating outreach email: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/escalations/{escalation_id}/generate-meeting")
+async def generate_meeting_invitation(escalation_id: str, details: dict = None):
+    """Generate meeting invitation for student"""
+    try:
+        escalations = load_escalations()
+        escalation = next((e for e in escalations if e["id"] == escalation_id), None)
+        
+        if not escalation:
+            raise HTTPException(status_code=404, detail="Escalation not found")
+        
+        # Get student profile
+        student_profile = get_or_create_student_profile(escalation["student_id"])
+        
+        # Import LLM client
+        from models.llm_client import LLMClient
+        llm_client = LLMClient()
+        
+        # Generate meeting invitation
+        meeting_content = llm_client.generate_meeting_invitation(escalation, student_profile, details)
+        
+        logger.info(f"Generated meeting invitation for escalation {escalation_id}")
+        return {
+            "status": "success",
+            "invitation": meeting_content
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating meeting invitation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/escalations/{escalation_id}/generate-summary")
+async def generate_session_summary(escalation_id: str, request: dict = None):
+    """Generate advising session summary"""
+    try:
+        escalations = load_escalations()
+        escalation = next((e for e in escalations if e["id"] == escalation_id), None)
+        
+        if not escalation:
+            raise HTTPException(status_code=404, detail="Escalation not found")
+        
+        # Get student profile
+        student_profile = get_or_create_student_profile(escalation["student_id"])
+        
+        # Import LLM client
+        from models.llm_client import LLMClient
+        llm_client = LLMClient()
+        
+        # Get session notes if provided
+        session_notes = request.get("notes", "") if request else ""
+        
+        # Generate summary
+        summary_content = llm_client.generate_session_summary(escalation, student_profile, session_notes)
+        
+        logger.info(f"Generated session summary for escalation {escalation_id}")
+        return {
+            "status": "success",
+            "summary": summary_content
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating session summary: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/escalations/{escalation_id}/generate-recovery-plan")
+async def generate_recovery_plan(escalation_id: str):
+    """Generate academic recovery plan for student"""
+    try:
+        escalations = load_escalations()
+        escalation = next((e for e in escalations if e["id"] == escalation_id), None)
+        
+        if not escalation:
+            raise HTTPException(status_code=404, detail="Escalation not found")
+        
+        # Get student profile
+        student_profile = get_or_create_student_profile(escalation["student_id"])
+        
+        # Import LLM client
+        from models.llm_client import LLMClient
+        llm_client = LLMClient()
+        
+        # Generate recovery plan
+        plan_content = llm_client.generate_recovery_plan(escalation, student_profile)
+        
+        logger.info(f"Generated recovery plan for escalation {escalation_id}")
+        return {
+            "status": "success",
+            "plan": plan_content
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating recovery plan: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/escalations/{escalation_id}/generate-guidance")
+async def generate_guidance_notes(escalation_id: str, request: dict = None):
+    """Generate personalized guidance notes based on policies"""
+    try:
+        escalations = load_escalations()
+        escalation = next((e for e in escalations if e["id"] == escalation_id), None)
+        
+        if not escalation:
+            raise HTTPException(status_code=404, detail="Escalation not found")
+        
+        # Get student profile
+        student_profile = get_or_create_student_profile(escalation["student_id"])
+        
+        # Import LLM client
+        from models.llm_client import LLMClient
+        llm_client = LLMClient()
+        
+        # Get policy context if provided
+        policy_context = request.get("policy_context", "") if request else ""
+        
+        # Generate guidance notes
+        guidance_content = llm_client.generate_guidance_notes(escalation, student_profile, policy_context)
+        
+        logger.info(f"Generated guidance notes for escalation {escalation_id}")
+        return {
+            "status": "success",
+            "guidance": guidance_content
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating guidance notes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

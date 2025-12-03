@@ -1016,6 +1016,125 @@ if tab3 and st.session_state.advisor_mode:
                                         st.info("No changes to save")
                                 except Exception as e:
                                     st.error(f"Error updating escalation: {e}")
+                            
+                            # ========== AI ASSIST TOOLS ==========
+                            st.markdown("---")
+                            st.markdown("#### 🤖 AI Assist Tools")
+                            st.markdown("Generate AI-powered content to help respond to this student:")
+                            
+                            # Tool selector
+                            assist_tool = st.selectbox(
+                                "Select Tool",
+                                [
+                                    "📧 Outreach Email",
+                                    "📅 Meeting Invitation",
+                                    "📝 Session Summary",
+                                    "📊 Academic Recovery Plan",
+                                    "📋 Guidance Notes"
+                                ],
+                                key=f"tool_select_{esc['id']}"
+                            )
+                            
+                            # Additional inputs for specific tools
+                            additional_input = ""
+                            if "Session Summary" in assist_tool:
+                                additional_input = st.text_area(
+                                    "Additional Session Notes (optional)",
+                                    placeholder="Add any notes from your conversation with the student...",
+                                    height=80,
+                                    key=f"session_notes_{esc['id']}"
+                                )
+                            elif "Guidance Notes" in assist_tool:
+                                additional_input = st.text_area(
+                                    "Relevant Policy Context (optional)",
+                                    placeholder="Add any specific SUNY policies or requirements...",
+                                    height=80,
+                                    key=f"policy_context_{esc['id']}"
+                                )
+                            
+                            tool_col1, tool_col2 = st.columns([1, 1])
+                            
+                            with tool_col1:
+                                if st.button("✨ Generate", key=f"generate_{esc['id']}", type="secondary"):
+                                    # Determine which tool to call
+                                    endpoint_map = {
+                                        "📧 Outreach Email": "generate-email",
+                                        "📅 Meeting Invitation": "generate-meeting",
+                                        "📝 Session Summary": "generate-summary",
+                                        "📊 Academic Recovery Plan": "generate-recovery-plan",
+                                        "📋 Guidance Notes": "generate-guidance"
+                                    }
+                                    
+                                    endpoint = endpoint_map[assist_tool]
+                                    
+                                    with st.spinner(f"🤖 Generating {assist_tool.split(' ', 1)[1]}..."):
+                                        try:
+                                            # Prepare request data
+                                            req_data = {}
+                                            if "Session Summary" in assist_tool and additional_input:
+                                                req_data = {"notes": additional_input}
+                                            elif "Guidance Notes" in assist_tool and additional_input:
+                                                req_data = {"policy_context": additional_input}
+                                            
+                                            # Make API call
+                                            gen_resp = requests.post(
+                                                f"{API_BASE}/advisor/escalations/{esc['id']}/{endpoint}",
+                                                json=req_data if req_data else None,
+                                                timeout=30
+                                            )
+                                            
+                                            if gen_resp.status_code == 200:
+                                                result = gen_resp.json()
+                                                content_key = list(result.keys())[1]  # Skip 'status', get content key
+                                                generated_content = result.get(content_key, "")
+                                                
+                                                # Store in session state for display
+                                                st.session_state[f"generated_content_{esc['id']}"] = generated_content
+                                                st.success(f"✅ {assist_tool.split(' ', 1)[1]} generated successfully!")
+                                                time.sleep(0.5)
+                                                st.rerun()
+                                            else:
+                                                st.error(f"Generation failed: {gen_resp.text}")
+                                        except Exception as e:
+                                            st.error(f"Error generating content: {e}")
+                            
+                            # Display generated content
+                            if st.session_state.get(f"generated_content_{esc['id']}"):
+                                st.markdown("---")
+                                st.markdown("##### 📄 Generated Content")
+                                
+                                generated_text = st.session_state[f"generated_content_{esc['id']}"]
+                                
+                                # Display in a nice text area for editing
+                                edited_content = st.text_area(
+                                    "Review and edit as needed:",
+                                    value=generated_text,
+                                    height=300,
+                                    key=f"edit_content_{esc['id']}"
+                                )
+                                
+                                action_col_a, action_col_b, action_col_c = st.columns(3)
+                                
+                                with action_col_a:
+                                    if st.button("📋 Copy to Clipboard", key=f"copy_{esc['id']}"):
+                                        # Use st.code to make it easy to copy
+                                        st.code(edited_content, language=None)
+                                        st.info("👆 Select text above and copy (Cmd/Ctrl+C)")
+                                
+                                with action_col_b:
+                                    # Download as text file
+                                    st.download_button(
+                                        label="⬇️ Download",
+                                        data=edited_content,
+                                        file_name=f"{assist_tool.replace(' ', '_').replace('📧', '').replace('📅', '').replace('📝', '').replace('📊', '').replace('📋', '').strip()}_{esc['student_id']}.txt",
+                                        mime="text/plain",
+                                        key=f"download_{esc['id']}"
+                                    )
+                                
+                                with action_col_c:
+                                    if st.button("🗑️ Clear", key=f"clear_gen_{esc['id']}"):
+                                        del st.session_state[f"generated_content_{esc['id']}"]
+                                        st.rerun()
             else:
                 st.error(f"Failed to load escalations: {esc_resp.text}")
         
