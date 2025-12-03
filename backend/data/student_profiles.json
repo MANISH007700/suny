@@ -1,0 +1,104 @@
+{
+  "STUDENT_001": {
+    "student_id": "STUDENT_001",
+    "name": "Emily Rodriguez",
+    "major": "Computer Science",
+    "gpa": 3.2,
+    "completed_courses": [
+      "CS 101 - Intro to Programming",
+      "CS 201 - Data Structures",
+      "MATH 141 - Calculus I",
+      "MATH 142 - Calculus II",
+      "CS 220 - Computer Architecture"
+    ],
+    "current_courses": [
+      "CS 301 - Algorithms",
+      "CS 320 - Operating Systems",
+      "CS 340 - Database Systems"
+    ],
+    "risk_level": "high",
+    "total_escalations": 2,
+    "last_interaction": "2025-12-03T10:30:20"
+  },
+  "STUDENT_002": {
+    "student_id": "STUDENT_002",
+    "name": "Marcus Thompson",
+    "major": "Computer Science",
+    "gpa": 2.5,
+    "completed_courses": [
+      "CS 101 - Intro to Programming",
+      "MATH 141 - Calculus I",
+      "ENG 101 - English Composition"
+    ],
+    "current_courses": [
+      "CS 201 - Data Structures",
+      "CS 220 - Computer Architecture",
+      "MATH 142 - Calculus II"
+    ],
+    "risk_level": "critical",
+    "total_escalations": 1,
+    "last_interaction": "2025-12-03T09:16:20"
+  },
+  "STUDENT_003": {
+    "student_id": "STUDENT_003",
+    "name": "Sophia Chen",
+    "major": "Mathematics",
+    "gpa": 3.8,
+    "completed_courses": [
+      "MATH 141 - Calculus I",
+      "MATH 142 - Calculus II",
+      "MATH 241 - Calculus III",
+      "MATH 310 - Linear Algebra",
+      "CS 101 - Intro to Programming"
+    ],
+    "current_courses": [
+      "MATH 410 - Abstract Algebra",
+      "MATH 420 - Real Analysis",
+      "CS 201 - Data Structures"
+    ],
+    "risk_level": "low",
+    "total_escalations": 1,
+    "last_interaction": "2025-12-02T14:20:15"
+  },
+  "STUDENT_004": {
+    "student_id": "STUDENT_004",
+    "name": "David Kim",
+    "major": "Engineering",
+    "gpa": 3.0,
+    "completed_courses": [
+      "ENGR 101 - Intro to Engineering",
+      "MATH 141 - Calculus I",
+      "PHYS 211 - Physics I",
+      "CHEM 101 - General Chemistry"
+    ],
+    "current_courses": [
+      "ENGR 201 - Statics",
+      "MATH 142 - Calculus II",
+      "PHYS 212 - Physics II"
+    ],
+    "risk_level": "medium",
+    "total_escalations": 1,
+    "last_interaction": "2025-12-03T08:00:15"
+  },
+  "STUDENT_005": {
+    "student_id": "STUDENT_005",
+    "name": "Jessica Williams",
+    "major": "Biology",
+    "gpa": 3.6,
+    "completed_courses": [
+      "BIO 101 - General Biology I",
+      "BIO 102 - General Biology II",
+      "CHEM 101 - General Chemistry",
+      "CHEM 102 - Organic Chemistry I"
+    ],
+    "current_courses": [
+      "BIO 301 - Genetics",
+      "BIO 320 - Microbiology",
+      "CHEM 201 - Organic Chemistry II"
+    ],
+    "risk_level": "low",
+    "total_escalations": 0,
+    "last_interaction": "2025-12-01T15:30:00"
+  }
+}
+

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import academic_guidance, study_tools
+from routers import academic_guidance, study_tools, advisor
 import logging
 
 
@@ -36,6 +36,7 @@ app.add_middleware(
 # Include routers
 app.include_router(academic_guidance.router, prefix="/academic", tags=["academic"])
 app.include_router(study_tools.router, prefix="/study", tags=["study"])
+app.include_router(advisor.router, prefix="/advisor", tags=["advisor"])
 
 @app.get("/")
 async def root():

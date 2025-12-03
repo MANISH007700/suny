@@ -104,7 +104,7 @@ async def initialize(request: InitRequest = InitRequest()):
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """Chat endpoint for RAG queries"""
+    """Chat endpoint for RAG queries with automatic escalation detection"""
     try:
         pipeline = get_rag_pipeline()
         
@@ -113,19 +113,77 @@ async def chat(request: ChatRequest):
             logger.warning("Chat attempted but vector store is empty")
             return ChatResponse(
                 answer="The knowledge base is empty. Please initialize the system first.",
-                citations=[]
+                citations=[],
+                escalation_id=None
             )
         
         logger.info(f"Processing query: '{request.question[:50]}...' with top_k={request.top_k}")
         
         # Perform RAG query
         result = pipeline.query(request.question, request.top_k)
+        answer = result.get("answer", "No answer generated")
+        citations = result.get("citations", [])
+        context = result.get("context", [])
         
-        logger.info(f"Query successful, returned {len(result.get('citations', []))} citations")
+        logger.info(f"Query successful, returned {len(citations)} citations")
+        
+        # Check if escalation is needed
+        escalation_id = None
+        if request.student_id:
+            should_escalate, escalation_reason = pipeline.llm_client.detect_escalation_needed(
+                request.question, answer, context
+            )
+            
+            if should_escalate:
+                # Create escalation
+                from datetime import datetime
+                import uuid
+                import json
+                import os
+                
+                escalation_id = str(uuid.uuid4())
+                now = datetime.now().isoformat()
+                
+                escalation_data = {
+                    "id": escalation_id,
+                    "student_id": request.student_id,
+                    "question": request.question,
+                    "ai_response": answer,
+                    "conversation_history": [
+                        {"role": "user", "content": request.question, "timestamp": now},
+                        {"role": "assistant", "content": answer, "timestamp": now}
+                    ],
+                    "status": "pending",
+                    "escalation_reason": escalation_reason,
+                    "created_at": now,
+                    "updated_at": now,
+                    "advisor_notes": [],
+                    "assigned_to": None,
+                    "priority": 3 if "urgent" in request.question.lower() else 2
+                }
+                
+                # Save escalation
+                escalations_file = "./backend/data/escalations.json"
+                os.makedirs("./backend/data", exist_ok=True)
+                
+                escalations = []
+                if os.path.exists(escalations_file):
+                    try:
+                        with open(escalations_file, 'r') as f:
+                            escalations = json.load(f)
+                    except:
+                        pass
+                
+                escalations.append(escalation_data)
+                with open(escalations_file, 'w') as f:
+                    json.dump(escalations, f, indent=2)
+                
+                logger.info(f"Created escalation {escalation_id} - Reason: {escalation_reason}")
         
         return ChatResponse(
-            answer=result.get("answer", "No answer generated"),
-            citations=result.get("citations", [])
+            answer=answer,
+            citations=citations,
+            escalation_id=escalation_id
         )
         
     except Exception as e:

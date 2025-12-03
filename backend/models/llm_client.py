@@ -51,7 +51,7 @@ Remember: You must base your answers strictly on the provided context."""
         try:
             # Build context string from retrieved chunks
             context_str = self._build_context_string(context[:top_k])
-            import pdb; pdb.set_trace()
+            
             # Build messages
             messages = [
                 {"role": "system", "content": self.get_system_prompt()},
@@ -139,3 +139,49 @@ Please provide a detailed answer based on the context above. Include specific ci
                 "snippet": chunk.get('text', '')[:200] + "..."
             })
         return citations
+    
+    def detect_escalation_needed(self, question: str, answer: str, context: List[Dict]) -> tuple[bool, str]:
+        """
+        Detect if a question should be escalated to human advisor
+        
+        Returns:
+            (should_escalate: bool, reason: str)
+        """
+        escalation_keywords = [
+            "financial aid", "financial", "scholarship", "tuition",
+            "withdraw", "drop out", "failing", "probation",
+            "mental health", "crisis", "emergency", "help me",
+            "accommodation", "disability", "waiver", "appeal",
+            "transfer credit", "graduation date", "commencement"
+        ]
+        
+        uncertain_phrases = [
+            "i don't have that information",
+            "not in the available documents",
+            "i cannot find",
+            "unclear from the context",
+            "not specified in the documents"
+        ]
+        
+        question_lower = question.lower()
+        answer_lower = answer.lower()
+        
+        # Check for sensitive keywords
+        for keyword in escalation_keywords:
+            if keyword in question_lower:
+                return True, f"Sensitive topic detected: {keyword}"
+        
+        # Check for uncertain response
+        for phrase in uncertain_phrases:
+            if phrase in answer_lower:
+                return True, "AI expressed uncertainty or lack of information"
+        
+        # Check if context quality is poor (very few relevant docs)
+        if len(context) < 2:
+            return True, "Insufficient context retrieved"
+        
+        # Check for very short answers (might indicate confusion)
+        if len(answer.split()) < 20:
+            return True, "Response too brief, may need human clarification"
+        
+        return False, ""

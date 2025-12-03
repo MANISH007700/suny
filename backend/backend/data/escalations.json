@@ -1,0 +1,187 @@
+[
+  {
+    "id": "469f93de-db38-4003-886e-c6d2748b9696",
+    "student_id": "STUDENT_001",
+    "question": "what is quantization ? ",
+    "ai_response": "Quantization is a process used in neural networks to approximate real-valued inputs. It involves mapping a floating-point value to an integer grid, with the size of this grid depending on the bit-width (Document 3).\n\nHere's a breakdown of quantization fundamentals:\n\n*   **Quantization Parameters:** Uniform affine quantization, also known as asymmetric quantization, is defined by three parameters (Document 3):\n    *   **Scale factor (s):** This is typically a floating-point number that specifies the step-size of the quantizer (Document 3). It can be restricted to a power-of-two (s = 2^-k) in symmetric quantization for hardware efficiencies, as scaling corresponds to simple bit-shifting (Document 1).\n    *   **Zero-point (z):** This is an integer that ensures that a real zero is quantized without error. This is crucial for operations like zero padding or ReLU to avoid introducing quantization error (Document 3). In symmetric quantization, the zero-point is restricted to 0, which reduces computational overhead but limits the mapping between integer and floating-point domains (Document 2).\n    *   **Bit-width (b):** This determines the size of the integer grid (Document 3).\n\n*   **Quantization Process:**\n    1.  **Mapping to Integer Grid:** A real-valued vector `x` is first mapped to an unsigned integer grid {0, ..., 2^b-1} using the formula:\n        `x_int = clamp(\u230ax/s\u2309 + z; 0, 2^b-1)`\n        where `\u230a\u00b7\u2309` is the round-to-nearest operator and `clamp` is a function that limits the value within a specified range (Document 3).\n    2.  **De-quantization:** To approximate the real-valued input, a de-quantization step is performed:\n        `x\u0302 = s(x_int - z)` (Document 2, Document 3).\n    3.  **General Quantization Function:** Combining these steps, the general quantization function `q(\u00b7)` is defined as:\n        `x\u0302 = q(x; s, z, b) = s[clamp(\u230ax/s\u2309 + z; 0, 2^b-1) - z]` (Document 2).\n\n*   **Quantization Granularity:**\n    *   **Per-tensor quantization:** This is the most common choice, where a single set of quantization parameters (quantizer) is defined per tensor (e.g., one for weights and one for activations). This simplifies hardware implementation (Document 1).\n    *   **Per-channel quantization:** This involves defining a separate quantizer for individual segments of a tensor, such as output channels of a weight tensor. This can improve performance (Document 1).\n    *   **Finer granularity:** Other methods go beyond per-channel quantization, applying separate quantizers per group of weights or activations. Increasing granularity generally improves accuracy but adds overhead (Document 1).\n\n*   **Errors in Quantization:**\n    *   **Clipping error:** Occurs when values of `x` lie outside the quantization grid limits (`q_min`, `q_max`) and are clipped. Increasing the scale factor can reduce clipping error (Document 2).\n    *   **Rounding error:** Lies in the range `[-1/(2s), 1/(2s)]`. Increasing the scale factor leads to increased rounding error (Document 2).\n\n*   **Quantization Techniques:**\n    *   **Post-Training Quantization (PTQ):** This method quantizes a trained network with little or no data, requiring minimal hyperparameter tuning and no end-to-end training. It's a \"push-button approach\" with low engineering effort and computational cost (Document 5).\n    *   **Quantization-Aware Training (QAT):** This technique involves retraining neural networks with simulated quantization in the training pipeline. While it requires more effort, it generally closes the gap to full-precision accuracy compared to PTQ, especially for low-bit quantization (Document 5). QAT is often resorted to when post-training techniques are insufficient to mitigate large quantization errors incurred by low-bit quantization (Document 4).",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what is quantization ? ",
+        "timestamp": "2025-12-03T18:03:03.091251"
+      },
+      {
+        "role": "assistant",
+        "content": "Quantization is a process used in neural networks to approximate real-valued inputs. It involves mapping a floating-point value to an integer grid, with the size of this grid depending on the bit-width (Document 3).\n\nHere's a breakdown of quantization fundamentals:\n\n*   **Quantization Parameters:** Uniform affine quantization, also known as asymmetric quantization, is defined by three parameters (Document 3):\n    *   **Scale factor (s):** This is typically a floating-point number that specifies the step-size of the quantizer (Document 3). It can be restricted to a power-of-two (s = 2^-k) in symmetric quantization for hardware efficiencies, as scaling corresponds to simple bit-shifting (Document 1).\n    *   **Zero-point (z):** This is an integer that ensures that a real zero is quantized without error. This is crucial for operations like zero padding or ReLU to avoid introducing quantization error (Document 3). In symmetric quantization, the zero-point is restricted to 0, which reduces computational overhead but limits the mapping between integer and floating-point domains (Document 2).\n    *   **Bit-width (b):** This determines the size of the integer grid (Document 3).\n\n*   **Quantization Process:**\n    1.  **Mapping to Integer Grid:** A real-valued vector `x` is first mapped to an unsigned integer grid {0, ..., 2^b-1} using the formula:\n        `x_int = clamp(\u230ax/s\u2309 + z; 0, 2^b-1)`\n        where `\u230a\u00b7\u2309` is the round-to-nearest operator and `clamp` is a function that limits the value within a specified range (Document 3).\n    2.  **De-quantization:** To approximate the real-valued input, a de-quantization step is performed:\n        `x\u0302 = s(x_int - z)` (Document 2, Document 3).\n    3.  **General Quantization Function:** Combining these steps, the general quantization function `q(\u00b7)` is defined as:\n        `x\u0302 = q(x; s, z, b) = s[clamp(\u230ax/s\u2309 + z; 0, 2^b-1) - z]` (Document 2).\n\n*   **Quantization Granularity:**\n    *   **Per-tensor quantization:** This is the most common choice, where a single set of quantization parameters (quantizer) is defined per tensor (e.g., one for weights and one for activations). This simplifies hardware implementation (Document 1).\n    *   **Per-channel quantization:** This involves defining a separate quantizer for individual segments of a tensor, such as output channels of a weight tensor. This can improve performance (Document 1).\n    *   **Finer granularity:** Other methods go beyond per-channel quantization, applying separate quantizers per group of weights or activations. Increasing granularity generally improves accuracy but adds overhead (Document 1).\n\n*   **Errors in Quantization:**\n    *   **Clipping error:** Occurs when values of `x` lie outside the quantization grid limits (`q_min`, `q_max`) and are clipped. Increasing the scale factor can reduce clipping error (Document 2).\n    *   **Rounding error:** Lies in the range `[-1/(2s), 1/(2s)]`. Increasing the scale factor leads to increased rounding error (Document 2).\n\n*   **Quantization Techniques:**\n    *   **Post-Training Quantization (PTQ):** This method quantizes a trained network with little or no data, requiring minimal hyperparameter tuning and no end-to-end training. It's a \"push-button approach\" with low engineering effort and computational cost (Document 5).\n    *   **Quantization-Aware Training (QAT):** This technique involves retraining neural networks with simulated quantization in the training pipeline. While it requires more effort, it generally closes the gap to full-precision accuracy compared to PTQ, especially for low-bit quantization (Document 5). QAT is often resorted to when post-training techniques are insufficient to mitigate large quantization errors incurred by low-bit quantization (Document 4).",
+        "timestamp": "2025-12-03T18:03:03.091251"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Insufficient context retrieved",
+    "created_at": "2025-12-03T18:03:03.091251",
+    "updated_at": "2025-12-03T18:03:03.091251",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "af63c0be-4ab1-47b9-8553-1bf63742707a",
+    "student_id": "STUDENT_001",
+    "question": "need help w financial aid ",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss neural networks and housing price prediction, not financial aid.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "need help w financial aid ",
+        "timestamp": "2025-12-03T18:08:37.867680"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss neural networks and housing price prediction, not financial aid.",
+        "timestamp": "2025-12-03T18:08:37.867680"
+      }
+    ],
+    "status": "closed",
+    "escalation_reason": "Sensitive topic detected: financial aid",
+    "created_at": "2025-12-03T18:08:37.867680",
+    "updated_at": "2025-12-03T18:42:22.477997",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "3dc4a932-d063-4224-b528-368ba66b85ca",
+    "student_id": "STUDENT_001",
+    "question": "need help w financial aid ",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss neural networks and housing price prediction, not financial aid.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "need help w financial aid ",
+        "timestamp": "2025-12-03T18:09:02.073319"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss neural networks and housing price prediction, not financial aid.",
+        "timestamp": "2025-12-03T18:09:02.073336"
+      }
+    ],
+    "status": "closed",
+    "escalation_reason": "AI answer was unclear or insufficient",
+    "created_at": "2025-12-03T18:09:02.076848",
+    "updated_at": "2025-12-03T18:31:54.744949",
+    "advisor_notes": [
+      {
+        "note": "closed\n",
+        "timestamp": "2025-12-03T18:31:54.744943"
+      }
+    ],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "927240fa-119b-48f3-ba5d-f8c67b68e3b1",
+    "student_id": "STUDENT_001",
+    "question": "i need money",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss topics related to machine learning, reinforcement learning, autonomous driving, and foundation models, but they do not contain any information about financial aid or money.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "i need money",
+        "timestamp": "2025-12-03T18:43:33.458184"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss topics related to machine learning, reinforcement learning, autonomous driving, and foundation models, but they do not contain any information about financial aid or money.",
+        "timestamp": "2025-12-03T18:43:33.458184"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI expressed uncertainty or lack of information",
+    "created_at": "2025-12-03T18:43:33.458184",
+    "updated_at": "2025-12-03T18:43:33.458184",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "e1ddffad-91f9-4385-96c0-b4374dede55d",
+    "student_id": "STUDENT_009",
+    "question": "i need money",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss topics related to machine learning, reinforcement learning, autonomous driving, and foundation models, but they do not contain any information about financial aid or money.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "i need money",
+        "timestamp": "2025-12-03T18:44:14.020967"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss topics related to machine learning, reinforcement learning, autonomous driving, and foundation models, but they do not contain any information about financial aid or money.",
+        "timestamp": "2025-12-03T18:44:14.020981"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI answer was unclear or insufficient",
+    "created_at": "2025-12-03T18:44:14.025184",
+    "updated_at": "2025-12-03T18:44:14.025184",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "b7438810-9e0f-44c4-ae72-530a6caa7bc7",
+    "student_id": "STUDENT_001",
+    "question": "whats new in market",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss model performance, token count statistics, and references to research papers related to neural networks and machine translation, but they do not contain information about new market developments.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "whats new in market",
+        "timestamp": "2025-12-03T19:03:09.619204"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss model performance, token count statistics, and references to research papers related to neural networks and machine translation, but they do not contain information about new market developments.",
+        "timestamp": "2025-12-03T19:03:09.619204"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI expressed uncertainty or lack of information",
+    "created_at": "2025-12-03T19:03:09.619204",
+    "updated_at": "2025-12-03T19:03:09.619204",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "953d6477-7282-4be6-ab64-1c4b1395b2e7",
+    "student_id": "STUDENT_001",
+    "question": "what is quantization ? ",
+    "ai_response": "Quantization is a process used in neural networks to approximate real-valued inputs. It involves mapping a floating-point value to an integer grid, with the size of this grid depending on the bit-width (Document 3).\n\nHere's a breakdown of quantization fundamentals:\n\n*   **Quantization Function:** The general definition of the quantization function, q(\u00b7), is given by:\n    \u02c6x = q(x;s,z,b ) = s[ clamp(\u230ax s\u2309 +z; 0,2b\u22121) \u2212z] (Document 2).\n    This function uses a scale factor (s), a zero-point (z), and a bit-width (b) to perform the quantization (Document 3).\n\n*   **De-quantization Step:** To approximate the real-valued input, a de-quantization step is performed: x \u2248 \u02c6x = s(xint\u2212z) (Document 2).\n\n*   **Quantization Parameters:**\n    *   **Scale Factor (s):** This is commonly a floating-point number that specifies the step-size of the quantizer. It can also be restricted to a power-of-two (s = 2\u2212k) in symmetric quantization for hardware efficiencies, as scaling with 's' corresponds to simple bit-shifting (Document 1, Document 3). Increasing the scale factor can reduce clipping error but leads to increased rounding error (Document 2).\n    *   **Zero-point (z):** This is an integer that ensures that real zero is quantized without error. This is crucial for operations like zero padding or ReLU to avoid quantization errors (Document 3).\n    *   **Bit-width (b):** The size of the integer grid depends on the bit-width (Document 3).\n\n*   **Types of Quantization:**\n    *   **Uniform Affine Quantization (Asymmetric Quantization):** This is defined by the three quantization parameters: scale factor, zero-point, and bit-width (Document 3).\n    *   **Symmetric Uniform Quantization:** This is a simplified version where the zero-point is restricted to 0. While it reduces computational overhead, it limits the mapping between integer and floating-point domains (Document 2). In this case, the choice of signed or unsigned integer grid matters (Document 2).\n\n*   **Quantization Granularity:**\n    *   **Per-tensor Quantization:** This is the most common choice, where a single set of quantization parameters is defined per tensor (e.g., one for weights and one for activations). It's favored due to simpler hardware implementation (Document 1).\n    *   **Per-channel Quantization:** This involves defining a separate quantizer for individual segments of a tensor, such as the output channels of a weight tensor. This can improve performance but comes with some extra overhead (Document 1).\n    *   **Finer Granularity:** Some approaches go beyond per-channel quantization, applying separate quantizers per group of weights or activations, which generally improves accuracy at the cost of overhead (Document 1).\n\n*   **Errors in Quantization:**\n    *   **Clipping Error:** Occurs when values of 'x' lie outside the quantization grid limits (qmin, qmax) and are clipped to those limits (Document 2).\n    *   **Rounding Error:** The rounding error lies in the range [\u22121/2s, 1/2s] (Document 2).\n\n*   **Quantization Techniques:**\n    *   **Post-Training Quantization (PTQ):** These methods take a trained network and quantize it with little or no data, requiring minimal hyperparameter tuning and no end-to-end training. They are effective and fast to implement (Document 5).\n    *   **Quantization-Aware Training (QAT):** This technique involves retraining neural networks with simulated quantization in the training pipeline. While it requires more effort, it generally closes the gap to full-precision accuracy, especially for low-bit quantization (Document 4, Document 5).",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what is quantization ? ",
+        "timestamp": "2025-12-03T19:15:24.418828"
+      },
+      {
+        "role": "assistant",
+        "content": "Quantization is a process used in neural networks to approximate real-valued inputs. It involves mapping a floating-point value to an integer grid, with the size of this grid depending on the bit-width (Document 3).\n\nHere's a breakdown of quantization fundamentals:\n\n*   **Quantization Function:** The general definition of the quantization function, q(\u00b7), is given by:\n    \u02c6x = q(x;s,z,b ) = s[ clamp(\u230ax s\u2309 +z; 0,2b\u22121) \u2212z] (Document 2).\n    This function uses a scale factor (s), a zero-point (z), and a bit-width (b) to perform the quantization (Document 3).\n\n*   **De-quantization Step:** To approximate the real-valued input, a de-quantization step is performed: x \u2248 \u02c6x = s(xint\u2212z) (Document 2).\n\n*   **Quantization Parameters:**\n    *   **Scale Factor (s):** This is commonly a floating-point number that specifies the step-size of the quantizer. It can also be restricted to a power-of-two (s = 2\u2212k) in symmetric quantization for hardware efficiencies, as scaling with 's' corresponds to simple bit-shifting (Document 1, Document 3). Increasing the scale factor can reduce clipping error but leads to increased rounding error (Document 2).\n    *   **Zero-point (z):** This is an integer that ensures that real zero is quantized without error. This is crucial for operations like zero padding or ReLU to avoid quantization errors (Document 3).\n    *   **Bit-width (b):** The size of the integer grid depends on the bit-width (Document 3).\n\n*   **Types of Quantization:**\n    *   **Uniform Affine Quantization (Asymmetric Quantization):** This is defined by the three quantization parameters: scale factor, zero-point, and bit-width (Document 3).\n    *   **Symmetric Uniform Quantization:** This is a simplified version where the zero-point is restricted to 0. While it reduces computational overhead, it limits the mapping between integer and floating-point domains (Document 2). In this case, the choice of signed or unsigned integer grid matters (Document 2).\n\n*   **Quantization Granularity:**\n    *   **Per-tensor Quantization:** This is the most common choice, where a single set of quantization parameters is defined per tensor (e.g., one for weights and one for activations). It's favored due to simpler hardware implementation (Document 1).\n    *   **Per-channel Quantization:** This involves defining a separate quantizer for individual segments of a tensor, such as the output channels of a weight tensor. This can improve performance but comes with some extra overhead (Document 1).\n    *   **Finer Granularity:** Some approaches go beyond per-channel quantization, applying separate quantizers per group of weights or activations, which generally improves accuracy at the cost of overhead (Document 1).\n\n*   **Errors in Quantization:**\n    *   **Clipping Error:** Occurs when values of 'x' lie outside the quantization grid limits (qmin, qmax) and are clipped to those limits (Document 2).\n    *   **Rounding Error:** The rounding error lies in the range [\u22121/2s, 1/2s] (Document 2).\n\n*   **Quantization Techniques:**\n    *   **Post-Training Quantization (PTQ):** These methods take a trained network and quantize it with little or no data, requiring minimal hyperparameter tuning and no end-to-end training. They are effective and fast to implement (Document 5).\n    *   **Quantization-Aware Training (QAT):** This technique involves retraining neural networks with simulated quantization in the training pipeline. While it requires more effort, it generally closes the gap to full-precision accuracy, especially for low-bit quantization (Document 4, Document 5).",
+        "timestamp": "2025-12-03T19:15:24.418837"
+      }
+    ],
+    "status": "resolved",
+    "escalation_reason": "AI answer was unclear or insufficient | Notes: need some help",
+    "created_at": "2025-12-03T19:15:24.438623",
+    "updated_at": "2025-12-03T19:16:10.821162",
+    "advisor_notes": [
+      {
+        "note": "resolved",
+        "timestamp": "2025-12-03T19:16:10.821156"
+      }
+    ],
+    "assigned_to": null,
+    "priority": 4
+  }
+]

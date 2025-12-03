@@ -1,0 +1,148 @@
+[
+  {
+    "id": "esc-001-sample",
+    "student_id": "STUDENT_001",
+    "question": "I need help with financial aid - my scholarship was denied and I can't afford tuition",
+    "ai_response": "I don't have that information in the available documents. Financial aid and scholarship matters are handled by the Financial Aid Office. I recommend contacting them directly for assistance with your specific situation.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "I need help with financial aid - my scholarship was denied and I can't afford tuition",
+        "timestamp": "2025-12-03T10:30:00"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. Financial aid and scholarship matters are handled by the Financial Aid Office. I recommend contacting them directly for assistance with your specific situation.",
+        "timestamp": "2025-12-03T10:30:15"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Sensitive topic detected: financial aid",
+    "created_at": "2025-12-03T10:30:20",
+    "updated_at": "2025-12-03T10:30:20",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 4
+  },
+  {
+    "id": "esc-002-sample",
+    "student_id": "STUDENT_002",
+    "question": "What are the CS major requirements?",
+    "ai_response": "Based on the available documents, the Computer Science major requirements include foundational courses in programming, data structures, algorithms, and advanced topics.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "What are the CS major requirements?",
+        "timestamp": "2025-12-03T09:15:00"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the available documents, the Computer Science major requirements include foundational courses in programming, data structures, algorithms, and advanced topics.",
+        "timestamp": "2025-12-03T09:15:10"
+      },
+      {
+        "role": "user",
+        "content": "I'm failing two of my CS courses and don't know what to do",
+        "timestamp": "2025-12-03T09:16:00"
+      },
+      {
+        "role": "assistant",
+        "content": "I understand you're having difficulty. I don't have specific information about academic support services in the documents, but I recommend speaking with your academic advisor about tutoring options and academic support resources.",
+        "timestamp": "2025-12-03T09:16:15"
+      }
+    ],
+    "status": "in_progress",
+    "escalation_reason": "Sensitive topic detected: failing",
+    "created_at": "2025-12-03T09:16:20",
+    "updated_at": "2025-12-03T11:00:00",
+    "advisor_notes": [
+      {
+        "note": "Student expressed concerns about failing courses. Need to schedule 1-on-1 meeting to discuss academic support options and potential tutoring.",
+        "timestamp": "2025-12-03T11:00:00"
+      }
+    ],
+    "assigned_to": "Dr. Sarah Johnson",
+    "priority": 5
+  },
+  {
+    "id": "esc-003-sample",
+    "student_id": "STUDENT_003",
+    "question": "Can I get a waiver for the mathematics prerequisite?",
+    "ai_response": "I don't have that information in the available documents. Prerequisite waivers are typically handled on a case-by-case basis by academic advisors and department chairs.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "Can I get a waiver for the mathematics prerequisite?",
+        "timestamp": "2025-12-02T14:20:00"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. Prerequisite waivers are typically handled on a case-by-case basis by academic advisors and department chairs.",
+        "timestamp": "2025-12-02T14:20:12"
+      }
+    ],
+    "status": "resolved",
+    "escalation_reason": "Sensitive topic detected: waiver",
+    "created_at": "2025-12-02T14:20:15",
+    "updated_at": "2025-12-02T16:45:00",
+    "advisor_notes": [
+      {
+        "note": "Reviewed student's transcript. Student has equivalent coursework from previous institution. Approved waiver and notified student via email.",
+        "timestamp": "2025-12-02T16:45:00"
+      }
+    ],
+    "assigned_to": "Prof. Michael Chen",
+    "priority": 2
+  },
+  {
+    "id": "esc-004-sample",
+    "student_id": "STUDENT_001",
+    "question": "I need disability accommodations for my exams",
+    "ai_response": "I don't have that information in the available documents. Disability accommodations are handled by the Office of Accessibility Services.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "I need disability accommodations for my exams",
+        "timestamp": "2025-12-01T13:10:00"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. Disability accommodations are handled by the Office of Accessibility Services.",
+        "timestamp": "2025-12-01T13:10:08"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Sensitive topic detected: accommodation",
+    "created_at": "2025-12-01T13:10:10",
+    "updated_at": "2025-12-01T13:10:10",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 3
+  },
+  {
+    "id": "esc-005-sample",
+    "student_id": "STUDENT_004",
+    "question": "When is the deadline to withdraw from a course?",
+    "ai_response": "The deadline to withdraw from a course varies by semester. Please check the academic calendar for specific dates.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "When is the deadline to withdraw from a course?",
+        "timestamp": "2025-12-03T08:00:00"
+      },
+      {
+        "role": "assistant",
+        "content": "The deadline to withdraw from a course varies by semester. Please check the academic calendar for specific dates.",
+        "timestamp": "2025-12-03T08:00:10"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Sensitive topic detected: withdraw",
+    "created_at": "2025-12-03T08:00:15",
+    "updated_at": "2025-12-03T08:00:15",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 3
+  }
+]
+

@@ -1,0 +1,24 @@
+{
+  "STUDENT_001": {
+    "student_id": "STUDENT_001",
+    "name": "Student STUDENT_",
+    "major": "Undeclared",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
+    "risk_level": "low",
+    "total_escalations": 2,
+    "last_interaction": "2025-12-03T19:15:24.443767"
+  },
+  "STUDENT_009": {
+    "student_id": "STUDENT_009",
+    "name": "Student STUDENT_",
+    "major": "Undeclared",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
+    "risk_level": "low",
+    "total_escalations": 1,
+    "last_interaction": "2025-12-03T18:44:14.027429"
+  }
+}
