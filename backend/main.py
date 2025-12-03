@@ -52,4 +52,13 @@ async def health():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8888)
+    # Run with multiple workers to handle concurrent requests (e.g., chat + health checks)
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=8888,
+        # Use threads to allow concurrent request handling
+        # This prevents health checks from timing out during long chat requests
+        limit_concurrency=100,
+        timeout_keep_alive=30
+    )

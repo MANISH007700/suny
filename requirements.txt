@@ -1,35 +1,35 @@
 # FastAPI Backend
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
+fastapi
+uvicorn[standard]
+pydantic
 
 # Streamlit Frontend
-streamlit==1.28.1
-plotly==5.18.0
+streamlit
+plotly
 
 # Environment
-python-dotenv==1.0.0
+python-dotenv
 
 # ML & Embeddings
-sentence-transformers==2.2.2
-torch==2.1.0
-transformers==4.35.0
+sentence-transformers
+torch
+transformers
 
 # PDF Processing
-pypdf==3.17.0
-pdfplumber==0.10.3
+pypdf
+pdfplumber
 
 # Vector Databases
-chromadb==0.4.18
-pinecone-client==2.2.4
+chromadb
+pinecone-client
 
 # HTTP Requests
-requests==2.31.0
-httpx==0.25.1
+requests
+httpx
 
 # Utilities
-numpy==1.24.3
-pandas==2.1.3
+numpy
+pandas
 
 # Logging
-colorlog==6.8.0
+colorlog

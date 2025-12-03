@@ -3,12 +3,18 @@ from fastapi import APIRouter, HTTPException
 from utils.schema import ChatRequest, ChatResponse, InitRequest, InitResponse
 from models.rag_pipeline import RAGPipeline
 import logging
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 # Singleton pattern for RAG Pipeline
 _rag_pipeline = None
+
+# Thread pool for blocking operations (like escalation check API calls)
+# This prevents blocking the async event loop
+_thread_pool = ThreadPoolExecutor(max_workers=4)
 
 def get_rag_pipeline():
     """Get or create RAG Pipeline singleton"""
@@ -127,11 +133,17 @@ async def chat(request: ChatRequest):
         
         logger.info(f"Query successful, returned {len(citations)} citations")
         
-        # Check if escalation is needed
+        # Check if escalation is needed (run in thread to avoid blocking)
         escalation_id = None
         if request.student_id:
-            should_escalate, escalation_reason = pipeline.llm_client.detect_escalation_needed(
-                request.question, answer, context
+            # Run escalation check in thread pool to prevent blocking other requests
+            loop = asyncio.get_event_loop()
+            should_escalate, escalation_reason = await loop.run_in_executor(
+                _thread_pool,
+                pipeline.llm_client.detect_escalation_needed,
+                request.question,
+                answer,
+                context
             )
             
             if should_escalate:

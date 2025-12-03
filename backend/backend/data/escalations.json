@@ -183,5 +183,190 @@
     ],
     "assigned_to": null,
     "priority": 4
+  },
+  {
+    "id": "56bb7432-3b10-4d12-b94d-d0286226a9f1",
+    "student_id": "STUDENT_001",
+    "question": "what documents do you have ?",
+    "ai_response": "I have access to the following documents, all related to Quantum Mechanics:\n\n*   **quantum-mech.pdf**: This document appears to cover several topics within quantum mechanics, including:\n    *   The quantization of light, discussing annihilation and creation operators, the Hamiltonian, commutation relations, and energy eigenstates (Document 1, Document 2).\n    *   The mathematical framework of quantum mechanics as linear algebra, including concepts like identity operators, bra-ket notation, and linear operators (Document 3).\n    *   Classical mechanics concepts such as generalized coordinates, Lagrangian, action, Euler-Lagrange equations, generalized momenta, and the Hamiltonian (Document 4).\n    *   The problem of measurement in quantum mechanics, specifically discussing mixtures and pure states, and the effect of measurement on an object's state (Document 5).",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what documents do you have ?",
+        "timestamp": "2025-12-03T22:59:22.263851"
+      },
+      {
+        "role": "assistant",
+        "content": "I have access to the following documents, all related to Quantum Mechanics:\n\n*   **quantum-mech.pdf**: This document appears to cover several topics within quantum mechanics, including:\n    *   The quantization of light, discussing annihilation and creation operators, the Hamiltonian, commutation relations, and energy eigenstates (Document 1, Document 2).\n    *   The mathematical framework of quantum mechanics as linear algebra, including concepts like identity operators, bra-ket notation, and linear operators (Document 3).\n    *   Classical mechanics concepts such as generalized coordinates, Lagrangian, action, Euler-Lagrange equations, generalized momenta, and the Hamiltonian (Document 4).\n    *   The problem of measurement in quantum mechanics, specifically discussing mixtures and pure states, and the effect of measurement on an object's state (Document 5).",
+        "timestamp": "2025-12-03T22:59:22.263851"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Insufficient context retrieved",
+    "created_at": "2025-12-03T22:59:22.263851",
+    "updated_at": "2025-12-03T22:59:22.263851",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "06bf3390-7b90-435b-8699-dcd55a966458",
+    "student_id": "STUDENT_001",
+    "question": "what documents do you have ? ",
+    "ai_response": "I have access to a document titled \"quantum-mech.pdf\". This document appears to cover various topics within quantum mechanics.\n\nSpecifically, the provided excerpts from \"quantum-mech.pdf\" discuss:\n*   **The Quantization of Light**: This includes the annihilation and creation operators, the Hamiltonian in terms of these operators, commutation relations, and energy eigenstates and eigenvalues of the quantized electromagnetic field (quantum-mech.pdf, pages 391, 389). It also touches upon the classical physics perspective of electromagnetic field energy versus the quantized view (quantum-mech.pdf, page 391).\n*   **Fourier Components and Hamiltonian Forms**: The document details the decomposition of the vector potential A(x) into transverse and longitudinal components, their Fourier transforms, and the form of the Hamiltonian in terms of these components. It also shows the ground-state solution as a Gaussian functional (quantum-mech.pdf, page 389).\n*   **Quantum Mechanics as Linear Algebra**: This section covers the identity operator, its representation in a given basis, and its properties when multiplied by other linear operators. It also discusses expressing any linear operator in terms of bra-ket symbols and the transformation of components under matrix multiplication (quantum-mech.pdf, page 318).\n*   **Classical Mechanics Foundations**: The document outlines the steps for describing the dynamics of a mechanical system using generalized coordinates, the Lagrangian function, the action principle, Euler-Lagrange equations, generalized momenta, and the Hamiltonian (quantum-mech.pdf, page 16).\n*   **The Problem of Measurement**: This section addresses the effect of measurement on a quantum system, defining \"pure states\" and \"mixed states\" in the context of an electron's spin measurement (quantum-mech.pdf, pages 357-358).",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what documents do you have ? ",
+        "timestamp": "2025-12-03T23:03:05.131353"
+      },
+      {
+        "role": "assistant",
+        "content": "I have access to a document titled \"quantum-mech.pdf\". This document appears to cover various topics within quantum mechanics.\n\nSpecifically, the provided excerpts from \"quantum-mech.pdf\" discuss:\n*   **The Quantization of Light**: This includes the annihilation and creation operators, the Hamiltonian in terms of these operators, commutation relations, and energy eigenstates and eigenvalues of the quantized electromagnetic field (quantum-mech.pdf, pages 391, 389). It also touches upon the classical physics perspective of electromagnetic field energy versus the quantized view (quantum-mech.pdf, page 391).\n*   **Fourier Components and Hamiltonian Forms**: The document details the decomposition of the vector potential A(x) into transverse and longitudinal components, their Fourier transforms, and the form of the Hamiltonian in terms of these components. It also shows the ground-state solution as a Gaussian functional (quantum-mech.pdf, page 389).\n*   **Quantum Mechanics as Linear Algebra**: This section covers the identity operator, its representation in a given basis, and its properties when multiplied by other linear operators. It also discusses expressing any linear operator in terms of bra-ket symbols and the transformation of components under matrix multiplication (quantum-mech.pdf, page 318).\n*   **Classical Mechanics Foundations**: The document outlines the steps for describing the dynamics of a mechanical system using generalized coordinates, the Lagrangian function, the action principle, Euler-Lagrange equations, generalized momenta, and the Hamiltonian (quantum-mech.pdf, page 16).\n*   **The Problem of Measurement**: This section addresses the effect of measurement on a quantum system, defining \"pure states\" and \"mixed states\" in the context of an electron's spin measurement (quantum-mech.pdf, pages 357-358).",
+        "timestamp": "2025-12-03T23:03:05.131353"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Insufficient context retrieved",
+    "created_at": "2025-12-03T23:03:05.131353",
+    "updated_at": "2025-12-03T23:03:05.131353",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "e0d43393-cd00-4f84-960c-3f0b3dc22a67",
+    "student_id": "STUDENT_001",
+    "question": "when is my next exam coming up ? ",
+    "ai_response": "I don't have that information in the available documents. The provided texts discuss language models, multi-document QA, and reinforcement learning, not academic schedules or exam dates.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "when is my next exam coming up ? ",
+        "timestamp": "2025-12-03T23:07:26.309614"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided texts discuss language models, multi-document QA, and reinforcement learning, not academic schedules or exam dates.",
+        "timestamp": "2025-12-03T23:07:26.309614"
+      }
+    ],
+    "status": "resolved",
+    "escalation_reason": "AI expressed uncertainty or lack of information",
+    "created_at": "2025-12-03T23:07:26.309614",
+    "updated_at": "2025-12-03T23:08:11.345540",
+    "advisor_notes": [
+      {
+        "note": "resolved - Manish Sharma \n",
+        "timestamp": "2025-12-03T23:08:11.345529"
+      }
+    ],
+    "assigned_to": "NONE",
+    "priority": 5
+  },
+  {
+    "id": "04b0ad49-d264-4199-bf81-c869e94b69fd",
+    "student_id": "Manish",
+    "question": "hellloooo",
+    "ai_response": "I can help you with academic advising, but I need a specific question related to course selection, prerequisites, graduation requirements, major/minor requirements, or academic policies.\n\nThe documents provided contain technical information about mathematical concepts like gradient ascent, ELBO (Evidence Lower Bound), re-parameterization trick, and Gaussian mixture models. They do not contain information relevant to general academic advising for SUNY students.\n\nPlease ask a specific question that I can answer using the provided context.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "hellloooo",
+        "timestamp": "2025-12-03T23:09:29.828041"
+      },
+      {
+        "role": "assistant",
+        "content": "I can help you with academic advising, but I need a specific question related to course selection, prerequisites, graduation requirements, major/minor requirements, or academic policies.\n\nThe documents provided contain technical information about mathematical concepts like gradient ascent, ELBO (Evidence Lower Bound), re-parameterization trick, and Gaussian mixture models. They do not contain information relevant to general academic advising for SUNY students.\n\nPlease ask a specific question that I can answer using the provided context.",
+        "timestamp": "2025-12-03T23:09:29.828041"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Insufficient context retrieved",
+    "created_at": "2025-12-03T23:09:29.828041",
+    "updated_at": "2025-12-03T23:09:29.828041",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "337721b2-622d-4a27-9f72-ba90391ae345",
+    "student_id": "Manish",
+    "question": "hellloooo",
+    "ai_response": "I can help you with academic advising, but I need a specific question related to course selection, prerequisites, graduation requirements, major/minor requirements, or academic policies.\n\nThe documents provided contain technical information about machine learning algorithms (specifically ELBO, gradient ascent, re-parameterization trick, and Gaussian mixture models) and some mathematical notations. They do not contain information relevant to general academic advising for SUNY students.\n\nPlease ask a specific question based on the context provided, or if your question is about SUNY academic advising, please provide the relevant SUNY documents.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "hellloooo",
+        "timestamp": "2025-12-03T23:09:36.070668"
+      },
+      {
+        "role": "assistant",
+        "content": "I can help you with academic advising, but I need a specific question related to course selection, prerequisites, graduation requirements, major/minor requirements, or academic policies.\n\nThe documents provided contain technical information about machine learning algorithms (specifically ELBO, gradient ascent, re-parameterization trick, and Gaussian mixture models) and some mathematical notations. They do not contain information relevant to general academic advising for SUNY students.\n\nPlease ask a specific question based on the context provided, or if your question is about SUNY academic advising, please provide the relevant SUNY documents.",
+        "timestamp": "2025-12-03T23:09:36.070668"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Insufficient context retrieved",
+    "created_at": "2025-12-03T23:09:36.070668",
+    "updated_at": "2025-12-03T23:09:36.070668",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "c2c1cd3d-e436-49ba-bd87-5c1b07acfd4a",
+    "student_id": "STUDENT_001",
+    "question": "Difference between supervised and reinforcement learning. ",
+    "ai_response": "The main difference between supervised and reinforcement learning lies in how they receive feedback and learn:\n\n*   **Supervised Learning:**\n    *   Algorithms in supervised learning aim to mimic labels (`y`) provided in a training set. (cs229.pdf, page 186)\n    *   These labels offer an unambiguous \"right answer\" for each input (`x`). (cs229.pdf, page 186)\n    *   For example, in predicting house prices, the training set includes input variables (like living area) and the corresponding output variable (price). The algorithm learns a function to predict `y` based on `x`. (cs229.pdf, page 6, 7)\n    *   Supervised learning problems can be categorized as regression (continuous target variable, e.g., house prices) or classification (discrete target variable, e.g., predicting if a dwelling is a house or apartment). (cs229.pdf, page 7)\n\n*   **Reinforcement Learning (RL):**\n    *   In contrast to supervised learning, RL algorithms are not given explicit \"right answers\" for actions. (cs229.pdf, page 186)\n    *   Instead, they receive a **reward function**, which indicates to the learning agent when it is performing well or poorly. (cs229.pdf, page 187)\n    *   The goal of the learning algorithm is to figure out how to choose actions over time to obtain large rewards. (cs229.pdf, page 187)\n    *   An example is programming a four-legged robot to walk; initially, there's no explicit supervision on what actions to take. The reward function might give positive rewards for moving forward and negative rewards for falling or moving backward. (cs229.pdf, page 187)\n    *   RL problems are typically framed within the formalism of Markov Decision Processes (MDPs). (cs229.pdf, page 187)\n    *   Reinforcement learning has applications in areas such as autonomous helicopter flight, robot locomotion, and network routing. (cs229.pdf, page 187)",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "Difference between supervised and reinforcement learning. ",
+        "timestamp": "2025-12-03T23:24:21.477583"
+      },
+      {
+        "role": "user",
+        "content": "Difference between supervised and reinforcement learning. ",
+        "timestamp": "2025-12-03T23:24:21.477603"
+      },
+      {
+        "role": "assistant",
+        "content": "The main difference between supervised and reinforcement learning lies in how they receive feedback and learn:\n\n*   **Supervised Learning:**\n    *   Algorithms in supervised learning aim to mimic labels (`y`) provided in a training set. (cs229.pdf, page 186)\n    *   These labels offer an unambiguous \"right answer\" for each input (`x`). (cs229.pdf, page 186)\n    *   For example, in predicting house prices, the training set includes input variables (like living area) and the corresponding output variable (price). The algorithm learns a function to predict `y` based on `x`. (cs229.pdf, page 6, 7)\n    *   Supervised learning problems can be categorized as regression (continuous target variable, e.g., house prices) or classification (discrete target variable, e.g., predicting if a dwelling is a house or apartment). (cs229.pdf, page 7)\n\n*   **Reinforcement Learning (RL):**\n    *   In contrast to supervised learning, RL algorithms are not given explicit \"right answers\" for actions. (cs229.pdf, page 186)\n    *   Instead, they receive a **reward function**, which indicates to the learning agent when it is performing well or poorly. (cs229.pdf, page 187)\n    *   The goal of the learning algorithm is to figure out how to choose actions over time to obtain large rewards. (cs229.pdf, page 187)\n    *   An example is programming a four-legged robot to walk; initially, there's no explicit supervision on what actions to take. The reward function might give positive rewards for moving forward and negative rewards for falling or moving backward. (cs229.pdf, page 187)\n    *   RL problems are typically framed within the formalism of Markov Decision Processes (MDPs). (cs229.pdf, page 187)\n    *   Reinforcement learning has applications in areas such as autonomous helicopter flight, robot locomotion, and network routing. (cs229.pdf, page 187)",
+        "timestamp": "2025-12-03T23:24:21.477605"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI answer was unclear or insufficient | Notes: MANISHHHHHH",
+    "created_at": "2025-12-03T23:24:21.480786",
+    "updated_at": "2025-12-03T23:24:21.480786",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 5
+  },
+  {
+    "id": "7475c319-3eda-4fa4-85ba-910371e54123",
+    "student_id": "STUDENT_001",
+    "question": "I need some money for my financial aid ",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss uniform quantization grids and related technical terms (\"s min\", \"s max\", \"Symmetric signed\", \"Asymmetric 0 255\") which are not related to financial aid.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "I need some money for my financial aid ",
+        "timestamp": "2025-12-03T23:25:21.398618"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss uniform quantization grids and related technical terms (\"s min\", \"s max\", \"Symmetric signed\", \"Asymmetric 0 255\") which are not related to financial aid.",
+        "timestamp": "2025-12-03T23:25:21.398618"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The student is requesting financial assistance, which is a sensitive topic, and the AI response admits it lacks the necessary information and found no relevant documents, indicating a need for human guidance.",
+    "created_at": "2025-12-03T23:25:21.398618",
+    "updated_at": "2025-12-03T23:25:21.398618",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
   }
 ]

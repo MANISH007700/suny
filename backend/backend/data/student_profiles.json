@@ -6,9 +6,9 @@
     "gpa": null,
     "completed_courses": [],
     "current_courses": [],
-    "risk_level": "low",
-    "total_escalations": 2,
-    "last_interaction": "2025-12-03T19:15:24.443767"
+    "risk_level": "medium",
+    "total_escalations": 3,
+    "last_interaction": "2025-12-03T23:24:21.484870"
   },
   "STUDENT_009": {
     "student_id": "STUDENT_009",
@@ -20,5 +20,16 @@
     "risk_level": "low",
     "total_escalations": 1,
     "last_interaction": "2025-12-03T18:44:14.027429"
+  },
+  "Manish": {
+    "student_id": "Manish",
+    "name": "Student Manish",
+    "major": "-",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
+    "risk_level": "low",
+    "total_escalations": 0,
+    "last_interaction": "2025-12-03T23:09:41.935227"
   }
 }

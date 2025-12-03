@@ -142,46 +142,101 @@ Please provide a detailed answer based on the context above. Include specific ci
     
     def detect_escalation_needed(self, question: str, answer: str, context: List[Dict]) -> tuple[bool, str]:
         """
-        Detect if a question should be escalated to human advisor
+        Use LLM to intelligently detect if a question should be escalated to human advisor.
+        Makes a separate API call to Gemma model for smart escalation decision.
         
         Returns:
             (should_escalate: bool, reason: str)
         """
-        escalation_keywords = [
-            "financial aid", "financial", "scholarship", "tuition",
-            "withdraw", "drop out", "failing", "probation",
-            "mental health", "crisis", "emergency", "help me",
-            "accommodation", "disability", "waiver", "appeal",
-            "transfer credit", "graduation date", "commencement"
-        ]
-        
-        uncertain_phrases = [
-            "i don't have that information",
-            "not in the available documents",
-            "i cannot find",
-            "unclear from the context",
-            "not specified in the documents"
-        ]
-        
-        question_lower = question.lower()
-        answer_lower = answer.lower()
-        
-        # Check for sensitive keywords
-        for keyword in escalation_keywords:
-            if keyword in question_lower:
-                return True, f"Sensitive topic detected: {keyword}"
-        
-        # Check for uncertain response
-        for phrase in uncertain_phrases:
-            if phrase in answer_lower:
-                return True, "AI expressed uncertainty or lack of information"
-        
-        # Check if context quality is poor (very few relevant docs)
-        if len(context) < 2:
-            return True, "Insufficient context retrieved"
-        
-        # Check for very short answers (might indicate confusion)
-        if len(answer.split()) < 20:
-            return True, "Response too brief, may need human clarification"
-        
-        return False, ""
+        try:
+            # Build the escalation check prompt
+            escalation_prompt = f"""You are an escalation decision system for an academic AI advisor. Your job is to determine if a student question needs human advisor review.
+
+STUDENT QUESTION:
+{question}
+
+AI RESPONSE PROVIDED:
+{answer}
+
+NUMBER OF RELEVANT DOCUMENTS FOUND: {len(context)}
+
+ESCALATION CRITERIA:
+You should recommend ESCALATION (respond "ESCALATE") if:
+1. AI response shows uncertainty or lacks information (phrases like "I don't have that information", "not in the documents", etc.)
+2. Critical situations requiring immediate human intervention (mental health crisis, emergency, student wants to drop out entirely, severe academic distress)
+3. Sensitive topics (financial aid, accommodations, appeals, waivers) WHERE the AI response is insufficient, unclear, or too brief
+4. AI response is extremely brief (<20 words) and doesn't fully answer the question
+5. No relevant documents were found (context count is 0) and answer is generic
+
+You should recommend NO ESCALATION (respond "NO_ESCALATE") if:
+1. AI provided a detailed, comprehensive answer with good information
+2. Answer includes citations, sources, or specific references to documents
+3. Answer is clear and directly addresses the question, even if brief
+4. Question is straightforward and AI answered it well (e.g., "What's the deadline?" → "The deadline is March 15th")
+5. The student received helpful, actionable information they can use
+
+IMPORTANT: Be practical and conservative. Only escalate when the student truly needs human help. If the AI answered well, don't escalate.
+
+Respond in this exact format:
+DECISION: [ESCALATE or NO_ESCALATE]
+REASON: [one sentence explaining why]
+
+Do not include any other text."""
+
+            # Make API call to Gemma model for escalation check
+            headers = self._get_headers()
+            
+            payload = {
+                "model": "google/gemma-3-4b-it",  # Fast, efficient model for classification
+                "messages": [
+                    {"role": "user", "content": escalation_prompt}
+                ],
+                "max_tokens": 100,
+                "temperature": 0.1  # Low temperature for consistent decisions
+            }
+            
+            logger.info("Calling LLM for escalation decision check...")
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=5)
+            
+            # If API call fails, use conservative fallback (don't escalate unless obvious)
+            if response.status_code != 200:
+                logger.warning(f"Escalation check API call failed: {response.status_code}")
+                # Simple fallback: only escalate if answer shows clear uncertainty
+                if any(phrase in answer.lower() for phrase in ["i don't have", "not in the documents", "i cannot find", "unclear"]):
+                    return True, "AI expressed uncertainty (fallback check)"
+                return False, ""
+            
+            # Parse LLM response
+            data = response.json()
+            llm_response = data['choices'][0]['message']['content'].strip()
+            
+            logger.info(f"Escalation check response: {llm_response}")
+            
+            # Parse decision and reason
+            decision_line = ""
+            reason_line = ""
+            
+            for line in llm_response.split('\n'):
+                line = line.strip()
+                if line.startswith("DECISION:"):
+                    decision_line = line.replace("DECISION:", "").strip().upper()
+                elif line.startswith("REASON:"):
+                    reason_line = line.replace("REASON:", "").strip()
+            
+            # Determine if should escalate
+            should_escalate = "ESCALATE" in decision_line and "NO_ESCALATE" not in decision_line
+            
+            if should_escalate:
+                reason = reason_line if reason_line else "LLM recommends human review"
+                logger.info(f"Escalation decision: YES - {reason}")
+                return True, reason
+            else:
+                logger.info("Escalation decision: NO - AI response is sufficient")
+                return False, ""
+                
+        except Exception as e:
+            logger.error(f"Error in escalation detection: {e}")
+            # Conservative fallback: don't escalate on error unless answer is clearly insufficient
+            if len(answer.split()) < 15 or "i don't have" in answer.lower():
+                return True, "AI response appears insufficient (fallback due to check error)"
+            return False, ""

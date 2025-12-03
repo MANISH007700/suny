@@ -74,13 +74,13 @@ for key in ['messages', 'citations', 'initialized', 'auto_init_done', 'study_mat
 # === Helper Functions ===
 def check_health(): 
     try: 
-        return requests.get(f"{API_BASE}/academic/health", timeout=5).status_code == 200 
+        return requests.get(f"{API_BASE}/academic/health", timeout=10).status_code == 200 
     except: 
         return False
 
 def check_vector_store_status():
     try:
-        r = requests.get(f"{API_BASE}/academic/status", timeout=5)
+        r = requests.get(f"{API_BASE}/academic/status", timeout=10)
         if r.status_code == 200:
             data = r.json()
             return data.get('is_populated', False), data.get('count', 0)
