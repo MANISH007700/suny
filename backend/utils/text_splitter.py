@@ -4,7 +4,7 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 class TextSplitter:
-    def __init__(self, chunk_size: int = 1500, chunk_overlap: int = 200):
+    def __init__(self, chunk_size: int = 1200, chunk_overlap: int = 100):
         """
         Initialize text splitter
         

@@ -518,5 +518,85 @@
     "advisor_notes": [],
     "assigned_to": null,
     "priority": 3
+  },
+  {
+    "id": "88d0b232-41ea-4749-99e4-b749fc2ad737",
+    "student_id": "STUDENT_001",
+    "question": "what are Q K V in transformers ? ",
+    "ai_response": "Based on the provided documents, here is a detailed explanation of Q, K, and V in the context of Transformers.\n\nQ, K, and V are abbreviations for **Query**, **",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what are Q K V in transformers ? ",
+        "timestamp": "2025-12-05T01:02:23.807724"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the provided documents, here is a detailed explanation of Q, K, and V in the context of Transformers.\n\nQ, K, and V are abbreviations for **Query**, **",
+        "timestamp": "2025-12-05T01:02:23.807724"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI response is incomplete (\"Q, K, and V are abbreviations for **Query**, **\") and no relevant documents were found, indicating a lack of sufficient information to answer the question adequately.",
+    "created_at": "2025-12-05T01:02:23.807724",
+    "updated_at": "2025-12-05T01:02:23.807724",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "a89d0907-145e-47ca-bc59-ddd6bbc7104d",
+    "student_id": "STUDENT_001",
+    "question": "what is Q K V in transformers ? ",
+    "ai_response": "Based on the provided documents, here is a detailed explanation of Q, K, and V in the Transformer model.\n\nQ, K, and V stand for **Query**, **Key**, and **",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what is Q K V in transformers ? ",
+        "timestamp": "2025-12-05T01:03:07.655102"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the provided documents, here is a detailed explanation of Q, K, and V in the Transformer model.\n\nQ, K, and V stand for **Query**, **Key**, and **",
+        "timestamp": "2025-12-05T01:03:07.655102"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI response is incomplete (\"Q, K, and V stand for **Query**, **Key**, and **\") and no relevant documents were found, indicating a lack of sufficient information to answer the question adequately.",
+    "created_at": "2025-12-05T01:03:07.655102",
+    "updated_at": "2025-12-05T01:03:07.655102",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "f0aa48d5-d0cb-479d-bde8-994186acb791",
+    "student_id": "Manish",
+    "question": "what is quantisation ?",
+    "ai_response": "Based on the provided documents, \"quantization\" refers to the process of mapping a floating-point value to an integer grid. This process is defined by three parameters: the scale factor (s), the zero-point (z), and the bit-width (b) (Document 1, quant.pdf, page 1).\n\nHere's a more detailed breakdown of quantization:\n\n*   **Affine Quantization (Asymmetric Quantization)**: This is a general form of quantization defined by the scale factor, zero-point, and bit-width.\n    *   **Scale Factor (s)**: A floating-point number that specifies the step-size of the quantizer (Document 1, quant.pdf, page 1).\n    *   **Zero-Point (z)**: An integer that ensures that a real zero is quantized without error. This is important for operations like zero padding or ReLU to avoid quantization error (Document 1, quant.pdf, page 1).\n    *   **Bit-width (b)**: Determines the size of the integer grid, which is {0, ..., 2^b - 1} (Document 1, quant.pdf, page 1).\n    *   **Quantization Operation**: A real-valued vector `x` is mapped to an unsigned integer grid using the formula:\n        `x_int = clamp(\u230ax/s\u2309 + z; 0, 2^b - 1)`\n        where `\u230a\u00b7\u2309` is the round-to-nearest operator and `clamp` is a function that limits the value within a specified range (Document 1, quant.pdf, page 1).\n    *   **De-quantization**: To approximate the real-valued input `x`, a de-quantization step is performed:\n        `x\u0302 = s(x_int - z)` (Document 1, quant.pdf, page 1)\n    *   **General Quantization Function**: Combining these steps, the quantization function `q(\u00b7)` is defined as:\n        `x\u0302 = q(x; s, z, b) = s [clamp(\u230ax/s\u2309 + z; 0, 2^b - 1) - z]` (Document 2, quant.pdf, page 1)\n    *   **Quantization Grid Limits**: The de-quantization step also defines the quantization grid limits (`q_min`, `q_max`), where `q_min = -sz` and `q_max = s(2^b - 1 - z)`. Values outside this range will be clipped, incurring a clipping error (Document 2, quant.pdf, page 1). Increasing the scale factor can reduce clipping error but increases rounding error (Document 2, quant.pdf, page 1).\n\n*   **Symmetric Uniform Quantization**: This is a simplified version of asymmetric quantization where the zero-point `z` is restricted to 0. This reduces computational overhead but limits the mapping between integer and floating-point domains (Document 2, quant.pdf, page 1).\n\n*   **Canonical Quantization (in Quantum Mechanics)**: In the context of quantum mechanics, quantization refers to a procedure for transforming a classical mechanical system into a quantum mechanical one. This procedure, first enunciated by Dirac, involves:\n    1.  Starting with a system described by coordinates and momenta `{q_a, p_a}` and a Hamiltonian `H(p, q)`.\n    2.  Physical states becoming vectors `|\u03c8>` in a Hilbert space.\n    3.  Observables being associated with Hermitian operators acting on vectors in Hilbert space. Specifically, coordinates `q_a` and momenta `p_a` correspond to operators `Q_a` and `P_a` that satisfy specific commutation relations:\n        `[Q_a, Q_b] = 0`\n        `[P_a, P_b] = 0`\n        `[Q_a, P_b] = i\u0127\u03b4_abI`\n    4.  Physical states evolving in time according to the Schr\u00f6dinger equation: `i\u0127|\u03c8> = H[P, Q]|\u03c8>`.\n    5.  The expectation value of an observable `O(p, q)` for a system in state `|\u03c8>` being given by `<O> = <\u03c8|O[P, Q]|\u03c8>` (Document 5, quantum-mech.pdf, page 1).\n\nIn summary, \"quantization\" has different meanings depending on the context, referring to either a numerical process for mapping floating-point numbers to integers or a fundamental procedure in quantum",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what is quantisation ?",
+        "timestamp": "2025-12-05T01:06:06.462663"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the provided documents, \"quantization\" refers to the process of mapping a floating-point value to an integer grid. This process is defined by three parameters: the scale factor (s), the zero-point (z), and the bit-width (b) (Document 1, quant.pdf, page 1).\n\nHere's a more detailed breakdown of quantization:\n\n*   **Affine Quantization (Asymmetric Quantization)**: This is a general form of quantization defined by the scale factor, zero-point, and bit-width.\n    *   **Scale Factor (s)**: A floating-point number that specifies the step-size of the quantizer (Document 1, quant.pdf, page 1).\n    *   **Zero-Point (z)**: An integer that ensures that a real zero is quantized without error. This is important for operations like zero padding or ReLU to avoid quantization error (Document 1, quant.pdf, page 1).\n    *   **Bit-width (b)**: Determines the size of the integer grid, which is {0, ..., 2^b - 1} (Document 1, quant.pdf, page 1).\n    *   **Quantization Operation**: A real-valued vector `x` is mapped to an unsigned integer grid using the formula:\n        `x_int = clamp(\u230ax/s\u2309 + z; 0, 2^b - 1)`\n        where `\u230a\u00b7\u2309` is the round-to-nearest operator and `clamp` is a function that limits the value within a specified range (Document 1, quant.pdf, page 1).\n    *   **De-quantization**: To approximate the real-valued input `x`, a de-quantization step is performed:\n        `x\u0302 = s(x_int - z)` (Document 1, quant.pdf, page 1)\n    *   **General Quantization Function**: Combining these steps, the quantization function `q(\u00b7)` is defined as:\n        `x\u0302 = q(x; s, z, b) = s [clamp(\u230ax/s\u2309 + z; 0, 2^b - 1) - z]` (Document 2, quant.pdf, page 1)\n    *   **Quantization Grid Limits**: The de-quantization step also defines the quantization grid limits (`q_min`, `q_max`), where `q_min = -sz` and `q_max = s(2^b - 1 - z)`. Values outside this range will be clipped, incurring a clipping error (Document 2, quant.pdf, page 1). Increasing the scale factor can reduce clipping error but increases rounding error (Document 2, quant.pdf, page 1).\n\n*   **Symmetric Uniform Quantization**: This is a simplified version of asymmetric quantization where the zero-point `z` is restricted to 0. This reduces computational overhead but limits the mapping between integer and floating-point domains (Document 2, quant.pdf, page 1).\n\n*   **Canonical Quantization (in Quantum Mechanics)**: In the context of quantum mechanics, quantization refers to a procedure for transforming a classical mechanical system into a quantum mechanical one. This procedure, first enunciated by Dirac, involves:\n    1.  Starting with a system described by coordinates and momenta `{q_a, p_a}` and a Hamiltonian `H(p, q)`.\n    2.  Physical states becoming vectors `|\u03c8>` in a Hilbert space.\n    3.  Observables being associated with Hermitian operators acting on vectors in Hilbert space. Specifically, coordinates `q_a` and momenta `p_a` correspond to operators `Q_a` and `P_a` that satisfy specific commutation relations:\n        `[Q_a, Q_b] = 0`\n        `[P_a, P_b] = 0`\n        `[Q_a, P_b] = i\u0127\u03b4_abI`\n    4.  Physical states evolving in time according to the Schr\u00f6dinger equation: `i\u0127|\u03c8> = H[P, Q]|\u03c8>`.\n    5.  The expectation value of an observable `O(p, q)` for a system in state `|\u03c8>` being given by `<O> = <\u03c8|O[P, Q]|\u03c8>` (Document 5, quantum-mech.pdf, page 1).\n\nIn summary, \"quantization\" has different meanings depending on the context, referring to either a numerical process for mapping floating-point numbers to integers or a fundamental procedure in quantum",
+        "timestamp": "2025-12-05T01:06:06.462685"
+      }
+    ],
+    "status": "resolved",
+    "escalation_reason": "AI answer was unclear or insufficient | Notes: last test - Manish",
+    "created_at": "2025-12-05T01:06:06.465592",
+    "updated_at": "2025-12-05T01:06:38.445266",
+    "advisor_notes": [
+      {
+        "note": "This ans is correct - RESOLVED",
+        "timestamp": "2025-12-05T01:06:38.445260"
+      }
+    ],
+    "assigned_to": null,
+    "priority": 2
   }
 ]

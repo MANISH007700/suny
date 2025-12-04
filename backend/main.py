@@ -60,5 +60,5 @@ if __name__ == "__main__":
         # Use threads to allow concurrent request handling
         # This prevents health checks from timing out during long chat requests
         limit_concurrency=100,
-        timeout_keep_alive=30
+        timeout_keep_alive=45
     )

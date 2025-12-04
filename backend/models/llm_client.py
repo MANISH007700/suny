@@ -29,7 +29,7 @@ Your role is to help students with:
 IMPORTANT RULES:
 1. Use ONLY the retrieved context from the provided PDF documents
 2. If information is not in the context, clearly state "I don't have that information in the available documents"
-3. Always cite your sources by mentioning the document name
+3. Always cite your sources by mentioning the document name and page and id 
 4. Be specific and provide detailed answers when information is available
 5. If asked about overlapping requirements, analyze all relevant documents
 6. Format your response clearly with bullet points or numbered lists when appropriate
@@ -56,11 +56,11 @@ Remember: You must base your answers strictly on the provided context."""
             messages = [
                 {"role": "system", "content": self.get_system_prompt()},
                 {"role": "user", "content": f"""Context from SUNY documents:
-{context_str}
+                {context_str}
 
-Student Question: {question}
+                Student Question: {question}
 
-Please provide a detailed answer based on the context above. Include specific citations."""}
+                Please provide a detailed answer based on the context above. Include specific citations."""}
             ]
             
             # Make API request
@@ -70,7 +70,7 @@ Please provide a detailed answer based on the context above. Include specific ci
                 "model": self.model,
                 "messages": messages,
                 "max_tokens": 1000,
-                "temperature": 0.3
+                "temperature": 0.1
             }
             
             logger.info(f"Sending request to OpenRouter with model: {self.model}")
@@ -287,7 +287,7 @@ Generate ONLY the email content without any additional commentary."""
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 600,
-                "temperature": 0.7
+                "temperature": 0.3
             }
             
             response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
@@ -334,7 +334,7 @@ Generate ONLY the invitation text."""
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 500,
-                "temperature": 0.7
+                "temperature": 0.3
             }
             
             response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
@@ -385,7 +385,7 @@ Generate ONLY the summary."""
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 800,
-                "temperature": 0.6
+                "temperature": 0.3
             }
             
             response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
@@ -451,7 +451,7 @@ Generate ONLY the recovery plan."""
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 1000,
-                "temperature": 0.6
+                "temperature": 0.3
             }
             
             response = requests.post(self.base_url, headers=headers, json=payload, timeout=20)
@@ -513,7 +513,7 @@ Generate ONLY the guidance notes."""
                 "model": self.model,
                 "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": 800,
-                "temperature": 0.5
+                "temperature": 0.3
             }
             
             response = requests.post(self.base_url, headers=headers, json=payload, timeout=15)
