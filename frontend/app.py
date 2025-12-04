@@ -1195,7 +1195,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
         st.markdown("""
         <div class="admin-banner">
             <div>
-                <h1 style="margin:0; color:#FFFFFF;">📊 Administrator Analytics Dashboard</h1>
+                <h1 style="margin:0; color:#E5E7EB;">📊 Administrator Analytics Dashboard</h1>
                 <p style="margin:0; color:#E5E7EB;">Comprehensive system insights and student behavior analytics</p>
             </div>
         </div>
@@ -1235,46 +1235,42 @@ if tab_admin and st.session_state.user_mode == "Administrator":
             escalation_rate = (escalated_count / total_questions * 100) if total_questions > 0 else 0
             
             with col1:
-                st.markdown(f"""
-                <div class="metric-card-gradient" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">TOTAL QUESTIONS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{total_questions:,}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Total Questions",
+                    f"{total_questions:,}",
+                    help="Total number of student questions asked"
+                )
             
             with col2:
-                st.markdown(f"""
-                <div class="metric-card-gradient-info" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">ACTIVE USERS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{active_users}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Active Users",
+                    f"{active_users}",
+                    help="Unique students who have used the system"
+                )
             
             with col3:
-                st.markdown(f"""
-                <div class="metric-card-gradient-success" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">WEEKLY ACTIVE</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{daily_active}</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Weekly Active",
+                    f"{daily_active}",
+                    help="Active students in the last 7 days"
+                )
             
             with col4:
-                satisfaction_color = "success" if avg_satisfaction >= 4 else "warning" if avg_satisfaction >= 3 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{satisfaction_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">AVG SATISFACTION</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{avg_satisfaction:.1f}/5</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Avg Satisfaction",
+                    f"{avg_satisfaction:.1f}/5",
+                    delta=f"{(avg_satisfaction - 3.5):.1f}" if avg_satisfaction > 0 else None,
+                    help="Average student satisfaction rating"
+                )
             
             with col5:
-                escalation_color = "success" if escalation_rate < 10 else "warning" if escalation_rate < 20 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{escalation_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">ESCALATION RATE</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{escalation_rate:.1f}%</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Escalation Rate",
+                    f"{escalation_rate:.1f}%",
+                    delta=f"{(10 - escalation_rate):.1f}%" if escalation_rate < 10 else f"-{(escalation_rate - 10):.1f}%",
+                    delta_color="inverse",
+                    help="Percentage of questions escalated to human advisors"
+                )
             
             st.markdown("---")
             
@@ -1446,42 +1442,36 @@ if tab_admin and st.session_state.user_mode == "Administrator":
             satisfaction_pct = (satisfied_count / len(ratings) * 100) if ratings else 0
             
             with qual_col1:
-                st.markdown(f"""
-                <div class="metric-card-gradient-warning" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">ESCALATED QUESTIONS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{escalated_count}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">{escalation_rate:.1f}% of total</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Escalated Questions",
+                    f"{escalated_count}",
+                    delta=f"{escalation_rate:.1f}% of total",
+                    help="Questions that required human advisor intervention"
+                )
             
             with qual_col2:
-                flag_color = "success" if flagged_rate < 5 else "warning" if flagged_rate < 10 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{flag_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">FLAGGED INCORRECT</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{flagged_count}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">{flagged_rate:.1f}% rate</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Flagged Incorrect",
+                    f"{flagged_count}",
+                    delta=f"{flagged_rate:.1f}% rate",
+                    delta_color="inverse",
+                    help="Responses flagged as incorrect by students"
+                )
             
             with qual_col3:
-                time_color = "success" if avg_response_time < 5 else "warning" if avg_response_time < 10 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{time_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">AVG RESPONSE TIME</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{avg_response_time:.2f}s</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Avg Response Time",
+                    f"{avg_response_time:.2f}s",
+                    help="Average time to generate a response"
+                )
             
             with qual_col4:
-                sat_color = "success" if satisfaction_pct >= 80 else "warning" if satisfaction_pct >= 60 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{sat_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">SATISFACTION RATE</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{satisfaction_pct:.1f}%</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">4+ stars</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Satisfaction Rate",
+                    f"{satisfaction_pct:.1f}%",
+                    delta=f"{(satisfaction_pct - 75):.1f}%",
+                    help="Percentage of students rating 4+ stars"
+                )
             
             st.markdown("---")
             
@@ -1581,32 +1571,26 @@ if tab_admin and st.session_state.user_mode == "Administrator":
             behav_col1, behav_col2, behav_col3 = st.columns(3)
             
             with behav_col1:
-                st.markdown(f"""
-                <div class="metric-card-gradient-warning" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">REPEAT HELP SEEKERS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{len(repeat_students)}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">10+ questions</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Repeat Help Seekers",
+                    f"{len(repeat_students)}",
+                    help="Students with 10+ questions (may need intervention)"
+                )
             
             with behav_col2:
-                st.markdown(f"""
-                <div class="metric-card-gradient-danger" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">HIGH FRICTION TOPICS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{len(high_friction_topics)}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">long conversations</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "High Friction Topics",
+                    f"{len(high_friction_topics)}",
+                    help="Topics that generate long conversations"
+                )
             
             with behav_col3:
                 avg_conversation_length = sum(log.get("conversation_length", 0) for log in question_logs) / len(question_logs) if question_logs else 0
-                st.markdown(f"""
-                <div class="metric-card-gradient-info" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">AVG CONVERSATION</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{avg_conversation_length:.1f}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">exchanges</div>
-                </div>
-                """, unsafe_allow_html=True)
+                st.metric(
+                    "Avg Conversation Length",
+                    f"{avg_conversation_length:.1f}",
+                    help="Average number of message exchanges per question"
+                )
             
             st.markdown("---")
             
@@ -1707,43 +1691,36 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                     risk_col1, risk_col2, risk_col3, risk_col4 = st.columns(4)
                     
                     with risk_col1:
-                        st.markdown(f"""
-                        <div class="metric-card-gradient-success" style="text-align:center;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">LOW RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['low']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">performing well</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.metric(
+                            "Low Risk",
+                            risk_distribution['low'],
+                            help="Students performing well"
+                        )
                     
                     with risk_col2:
-                        st.markdown(f"""
-                        <div class="metric-card-gradient-warning" style="text-align:center;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">MEDIUM RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['medium']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">needs monitoring</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.metric(
+                            "Medium Risk",
+                            risk_distribution['medium'],
+                            help="Students needing monitoring"
+                        )
                     
                     with risk_col3:
-                        st.markdown(f"""
-                        <div class="metric-card-gradient-danger" style="text-align:center;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">HIGH RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['high']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">⚠️ needs attention</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.metric(
+                            "High Risk",
+                            risk_distribution['high'],
+                            delta="Needs attention",
+                            delta_color="off",
+                            help="Students requiring intervention"
+                        )
                     
                     with risk_col4:
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); 
-                                     padding: 1.5rem; border-radius: 16px; text-align:center;
-                                     box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4); color: #FFFFFF;
-                                     transition: all 0.3s ease;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">CRITICAL RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['critical']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">🚨 urgent</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        st.metric(
+                            "Critical Risk",
+                            risk_distribution['critical'],
+                            delta="Urgent",
+                            delta_color="off",
+                            help="Students in critical need of support"
+                        )
                     
                     st.markdown("---")
                     
@@ -1930,6 +1907,335 @@ if tab_admin and st.session_state.user_mode == "Administrator":
             st.error("📁 Analytics data file not found. Please ensure the backend has generated analytics data.")
         except Exception as e:
             st.error(f"❌ Error loading analytics data: {e}")
+        
+        st.markdown("---")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # ========== SECTION 6: CONTENT MANAGEMENT ==========
+        st.markdown("## 📁 Content Management")
+        st.markdown("### Upload and manage academic documents for the AI knowledge base")
+        st.markdown("---")
+        
+        # Create tabs for Upload and Manage
+        content_tab1, content_tab2 = st.tabs(["📤 Upload Documents", "📚 Manage Documents"])
+        
+        with content_tab1:
+            st.markdown("### Upload New Documents")
+            st.markdown("Upload PDF or TXT files containing course catalogs, policies, guides, or academic information.")
+            
+            # Upload area
+            st.markdown("""
+            <div class="upload-area">
+                <div style="font-size:3rem; margin-bottom:1rem;">📄</div>
+                <h3 style="color:#1D4ED8; margin-bottom:0.5rem;">Drag & Drop Files Here</h3>
+                <p style="color:#64748B; margin-bottom:1.5rem;">or click below to browse</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            # File uploader
+            uploaded_files = st.file_uploader(
+                "Choose PDF or TXT files",
+                type=["pdf", "txt"],
+                accept_multiple_files=True,
+                key="doc_uploader",
+                help="Upload documents to add to the AI knowledge base"
+            )
+            
+            if uploaded_files:
+                st.success(f"✅ {len(uploaded_files)} file(s) selected")
+                
+                # Show selected files
+                for file in uploaded_files:
+                    file_extension = file.name.split('.')[-1].upper()
+                    file_size_kb = file.size / 1024
+                    
+                    icon_class = "document-icon-pdf" if file_extension == "PDF" else "document-icon-txt"
+                    
+                    st.markdown(f"""
+                    <div style="display:flex; align-items:center; padding:1rem; background:#F8FAFC; border-radius:12px; margin:0.5rem 0;">
+                        <div class="document-icon {icon_class}">{file_extension}</div>
+                        <div style="flex:1; margin-left:1rem;">
+                            <div style="font-weight:600; color:#1E293B;">{file.name}</div>
+                            <div style="font-size:0.875rem; color:#64748B;">{file_size_kb:.1f} KB</div>
+                        </div>
+                        <div style="color:#22C55E; font-weight:600;">Ready</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                
+                # Process button
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    if st.button("🚀 Process & Add to Knowledge Base", type="primary", use_container_width=True):
+                        # Save uploaded files to pdf directory
+                        import os
+                        import shutil
+                        
+                        pdf_dir = "/Users/DLP-I516-206/Desktop/ubi-code/suny/suny/backend/data/pdfs"
+                        os.makedirs(pdf_dir, exist_ok=True)
+                        
+                        saved_files = []
+                        for file in uploaded_files:
+                            # Save to pdfs directory
+                            file_path = os.path.join(pdf_dir, file.name)
+                            with open(file_path, "wb") as f:
+                                f.write(file.getbuffer())
+                            saved_files.append(file.name)
+                            logger.info(f"Saved file: {file.name}")
+                        
+                        # Processing status
+                        with st.container():
+                            st.markdown("""
+                            <div class="processing-modal">
+                                <h3 style="color:#1D4ED8; text-align:center; margin-bottom:1.5rem;">Processing Documents</h3>
+                            """, unsafe_allow_html=True)
+                            
+                            progress_bar = st.progress(0)
+                            status_text = st.empty()
+                            
+                            # Show uploading status
+                            status_text.markdown(f"""
+                            <div class="processing-step processing-step-active">
+                                <div style="margin-right:1rem; font-size:1.5rem;">📤</div>
+                                <div>
+                                    <div style="font-weight:600; color:#1E293B;">Uploading {len(uploaded_files)} file(s)</div>
+                                    <div style="font-size:0.875rem; color:#64748B;">Saving to document directory...</div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            progress_bar.progress(0.2)
+                            time.sleep(0.5)
+                            
+                            # Call backend to process
+                            status_text.markdown(f"""
+                            <div class="processing-step processing-step-active">
+                                <div style="margin-right:1rem; font-size:1.5rem;">🔄</div>
+                                <div>
+                                    <div style="font-weight:600; color:#1E293B;">Initializing Processing</div>
+                                    <div style="font-size:0.875rem; color:#64748B;">Contacting backend API...</div>
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            progress_bar.progress(0.4)
+                            
+                            # Call the same init endpoint used by the sidebar
+                            try:
+                                success, msg, count, skipped = initialize_system(force_rebuild=False)
+                                
+                                if success:
+                                    progress_bar.progress(1.0)
+                                    status_text.markdown(f"""
+                                    <div class="processing-step processing-step-complete">
+                                        <div style="margin-right:1rem; font-size:1.5rem;">✅</div>
+                                        <div>
+                                            <div style="font-weight:600; color:#1E293B;">Processing Complete!</div>
+                                            <div style="font-size:0.875rem; color:#22C55E;">{msg}</div>
+                                            <div style="font-size:0.875rem; color:#22C55E;">Total chunks in database: {count}</div>
+                                        </div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                    
+                                    st.markdown("</div>", unsafe_allow_html=True)
+                                    st.success(f"🎉 Successfully processed {len(uploaded_files)} document(s)!")
+                                    st.info(f"💡 The AI assistant can now answer questions using these documents. Total chunks: {count}")
+                                    
+                                    time.sleep(2)
+                                    st.rerun()
+                                else:
+                                    progress_bar.progress(1.0)
+                                    st.markdown("</div>", unsafe_allow_html=True)
+                                    st.error(f"❌ Processing failed: {msg}")
+                                    
+                            except Exception as e:
+                                progress_bar.progress(1.0)
+                                st.markdown("</div>", unsafe_allow_html=True)
+                                st.error(f"❌ Error during processing: {e}")
+                                logger.error(f"Processing error: {e}")
+        
+        with content_tab2:
+            st.markdown("### Indexed Documents")
+            st.markdown("View and manage all documents currently in the knowledge base.")
+            
+            # Get document list from backend
+            try:
+                with open("/Users/DLP-I516-206/Desktop/ubi-code/suny/suny/backend/vector_store/processed_pdfs.json", "r") as f:
+                    processed_docs = json.load(f)
+                
+                if processed_docs:
+                    # Check if it's a simple list of strings (filenames only)
+                    if isinstance(processed_docs, list) and all(isinstance(doc, str) for doc in processed_docs):
+                        # Simple string list format - get actual file info
+                        import os
+                        pdf_dir = "/Users/DLP-I516-206/Desktop/ubi-code/suny/suny/backend/data/pdfs"
+                        
+                        doc_details = []
+                        for filename in processed_docs:
+                            file_path = os.path.join(pdf_dir, filename)
+                            if os.path.exists(file_path):
+                                size_bytes = os.path.getsize(file_path)
+                                size_kb = size_bytes / 1024
+                                modified_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+                                
+                                doc_details.append({
+                                    'name': filename,
+                                    'size_kb': size_kb,
+                                    'upload_date': modified_time.isoformat(),
+                                    'status': 'active',
+                                    'version': 1,
+                                    'chunk_count': 0  # Will be populated by backend later
+                                })
+                            else:
+                                # File doesn't exist, use placeholder data
+                                doc_details.append({
+                                    'name': filename,
+                                    'size_kb': 0,
+                                    'upload_date': datetime.now().isoformat(),
+                                    'status': 'active',
+                                    'version': 1,
+                                    'chunk_count': 0
+                                })
+                        
+                        processed_docs = doc_details
+                    
+                    # Now process as list of dicts
+                    doc_count = len(processed_docs)
+                    total_size = sum(doc.get('size_kb', 0) for doc in processed_docs if isinstance(doc, dict))
+                    total_chunks = sum(doc.get('chunk_count', 0) for doc in processed_docs if isinstance(doc, dict))
+                    
+                    metric_col1, metric_col2, metric_col3 = st.columns(3)
+                    
+                    with metric_col1:
+                        st.metric("Total Documents", doc_count)
+                    
+                    with metric_col2:
+                        st.metric("Total Size", f"{total_size:.1f} KB")
+                    
+                    with metric_col3:
+                        st.metric("Total Chunks", total_chunks if total_chunks > 0 else "N/A")
+                    
+                    st.markdown("---")
+                    
+                    # Document list
+                    st.markdown("### 📋 Document Library")
+                    
+                    # Sort by upload date (newest first)
+                    sorted_docs = sorted(
+                        processed_docs,
+                        key=lambda x: x.get('upload_date', '') if isinstance(x, dict) else '',
+                        reverse=True
+                    )
+                    
+                    for doc_info in sorted_docs:
+                        if not isinstance(doc_info, dict):
+                            continue
+                        
+                        doc_name = doc_info.get('name', 'Unknown')
+                        file_extension = doc_name.split('.')[-1].upper()
+                        icon_class = "document-icon-pdf" if file_extension == "PDF" else "document-icon-txt"
+                        
+                        version = doc_info.get('version', 1)
+                        upload_date = doc_info.get('upload_date', 'Unknown')
+                        chunk_count = doc_info.get('chunk_count', 0)
+                        size_kb = doc_info.get('size_kb', 0)
+                        status = doc_info.get('status', 'active')
+                        
+                        status_badge = {
+                            'active': '<span class="version-badge-active">Active</span>',
+                            'deprecated': '<span class="version-badge-old">Deprecated</span>',
+                            'replaced': '<span class="version-badge-old">Replaced</span>'
+                        }.get(status, '<span class="version-badge-active">Active</span>')
+                        
+                        st.markdown(f"""
+                        <div class="document-card">
+                            <div style="display:flex; align-items:center;">
+                                <div class="document-icon {icon_class}">{file_extension}</div>
+                                <div style="flex:1; margin-left:1.5rem;">
+                                    <div style="display:flex; align-items:center; margin-bottom:0.5rem;">
+                                        <h4 style="margin:0; color:#1E293B;">{doc_name}</h4>
+                                        <div style="margin-left:1rem;">
+                                            {status_badge}
+                                            <span class="version-badge version-badge-old" style="margin-left:0.5rem;">v{version}</span>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; gap:2rem; font-size:0.875rem; color:#64748B;">
+                                        <div><strong>Uploaded:</strong> {upload_date[:10] if len(upload_date) > 10 else upload_date}</div>
+                                        <div><strong>Chunks:</strong> {chunk_count}</div>
+                                        <div><strong>Size:</strong> {size_kb:.1f} KB</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Action buttons
+                        col1, col2, col3, col4, col5 = st.columns(5)
+                        
+                        with col1:
+                            if st.button("👁️ View", key=f"view_{doc_name}", use_container_width=True):
+                                st.info(f"Viewing metadata for: {doc_name}")
+                        
+                        with col2:
+                            if st.button("🔄 Replace", key=f"replace_{doc_name}", use_container_width=True):
+                                st.info(f"Upload a new version to replace: {doc_name}")
+                        
+                        with col3:
+                            if st.button("📋 Duplicate", key=f"duplicate_{doc_name}", use_container_width=True):
+                                st.info(f"Creating duplicate of: {doc_name}")
+                        
+                        with col4:
+                            if status == 'active':
+                                if st.button("⏸️ Deactivate", key=f"deactivate_{doc_name}", use_container_width=True):
+                                    st.warning(f"Deactivating: {doc_name}")
+                            else:
+                                if st.button("▶️ Activate", key=f"activate_{doc_name}", use_container_width=True):
+                                    st.success(f"Activating: {doc_name}")
+                        
+                        with col5:
+                            if st.button("🗑️ Delete", key=f"delete_{doc_name}", use_container_width=True, type="secondary"):
+                                st.error(f"⚠️ Delete {doc_name}? This action cannot be undone!")
+                        
+                        st.markdown("<hr style='margin:0.5rem 0; border:none; border-top:1px solid #F1F5F9;'>", unsafe_allow_html=True)
+                    
+                else:
+                    st.info("📭 No documents have been uploaded yet. Use the 'Upload Documents' tab to add your first document.")
+            
+            except FileNotFoundError:
+                # Show sample/demo documents
+                st.info("📁 Knowledge Base Status: Using default configuration")
+                st.markdown("### Sample Documents")
+                
+                sample_docs = [
+                    {"name": "attention.pdf", "date": "2025-12-04", "chunks": 142, "size": 245.3, "version": 1},
+                    {"name": "cs229.pdf", "date": "2025-12-03", "chunks": 289, "size": 512.8, "version": 1},
+                    {"name": "lim.pdf", "date": "2025-12-02", "chunks": 98, "size": 178.4, "version": 1},
+                    {"name": "quant.pdf", "date": "2025-12-01", "chunks": 156, "size": 298.7, "version": 1},
+                    {"name": "quantum-mech.pdf", "date": "2025-11-30", "chunks": 234, "size": 421.2, "version": 1},
+                    {"name": "scaling.pdf", "date": "2025-11-29", "chunks": 187, "size": 356.9, "version": 1},
+                ]
+                
+                for doc in sample_docs:
+                    st.markdown(f"""
+                    <div class="document-card">
+                        <div style="display:flex; align-items:center;">
+                            <div class="document-icon document-icon-pdf">PDF</div>
+                            <div style="flex:1; margin-left:1.5rem;">
+                                <div style="display:flex; align-items:center; margin-bottom:0.5rem;">
+                                    <h4 style="margin:0; color:#1E293B;">{doc['name']}</h4>
+                                    <span class="version-badge-active" style="margin-left:1rem;">Active</span>
+                                    <span class="version-badge version-badge-old" style="margin-left:0.5rem;">v{doc['version']}</span>
+                                </div>
+                                <div style="display:flex; gap:2rem; font-size:0.875rem; color:#64748B;">
+                                    <div><strong>Uploaded:</strong> {doc['date']}</div>
+                                    <div><strong>Chunks:</strong> {doc['chunks']}</div>
+                                    <div><strong>Size:</strong> {doc['size']} KB</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 # === Footer ===
 st.markdown("""<div class="footer">

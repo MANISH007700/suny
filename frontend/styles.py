@@ -252,6 +252,144 @@ def get_main_styles():
         font-weight: 700;
     }
     
+    /* === Gradient Metric Cards === */
+    .metric-card-gradient {
+        background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+        color: #FFFFFF;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-card-gradient:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+    }
+    
+    .metric-card-gradient-warning {
+        background: linear-gradient(135deg, #FACC15 0%, #F59E0B 100%);
+        box-shadow: 0 4px 16px rgba(250, 204, 21, 0.3);
+    }
+    
+    .metric-card-gradient-success {
+        background: linear-gradient(135deg, #22C55E 0%, #10B981 100%);
+        box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+    }
+    
+    .metric-card-gradient-danger {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    }
+    
+    .metric-card-gradient-info {
+        background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+        box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+    }
+    
+    /* === Upload Area === */
+    .upload-area {
+        background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+        border: 2px dashed #3B82F6;
+        border-radius: 16px;
+        padding: 3rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .upload-area:hover {
+        background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+        border-color: #1D4ED8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+    }
+    
+    /* === Document Card === */
+    .document-card {
+        background: #FFFFFF;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+    }
+    
+    .document-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        border-color: #3B82F6;
+    }
+    
+    .document-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #FFFFFF;
+    }
+    
+    .document-icon-pdf {
+        background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    }
+    
+    .document-icon-txt {
+        background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    }
+    
+    /* === Processing Status === */
+    .processing-modal {
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        max-width: 500px;
+        margin: 2rem auto;
+    }
+    
+    .processing-step {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        border-radius: 8px;
+        background: #F8FAFC;
+    }
+    
+    .processing-step-active {
+        background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+        border-left: 4px solid #3B82F6;
+    }
+    
+    .processing-step-complete {
+        background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+        border-left: 4px solid #22C55E;
+    }
+    
+    /* === Version Badge === */
+    .version-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .version-badge-active {
+        background: linear-gradient(135deg, #22C55E 0%, #10B981 100%);
+        color: #FFFFFF;
+    }
+    
+    .version-badge-old {
+        background: #F1F5F9;
+        color: #64748B;
+    }
+    
     /* === Expander === */
     .streamlit-expanderHeader {
         background: #FFFFFF;
