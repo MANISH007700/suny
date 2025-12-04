@@ -368,5 +368,105 @@
     "advisor_notes": [],
     "assigned_to": null,
     "priority": 2
+  },
+  {
+    "id": "65bf1c40-b095-40a2-88f9-e633618b283a",
+    "student_id": "STUDENT_001",
+    "question": "I want some money for my tuition",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss uniform quantization grids and related technical terms, not financial aid or tuition.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "I want some money for my tuition",
+        "timestamp": "2025-12-04T11:34:32.558814"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss uniform quantization grids and related technical terms, not financial aid or tuition.",
+        "timestamp": "2025-12-04T11:34:32.558814"
+      }
+    ],
+    "status": "resolved",
+    "escalation_reason": "The student is asking for financial assistance, and the AI response indicates it lacks the necessary information and found no relevant documents, requiring human intervention.",
+    "created_at": "2025-12-04T11:34:32.558814",
+    "updated_at": "2025-12-04T11:35:46.965266",
+    "advisor_notes": [
+      {
+        "note": "I have resolved your query",
+        "timestamp": "2025-12-04T11:35:46.965208"
+      }
+    ],
+    "assigned_to": "Manish Sharma",
+    "priority": 3
+  },
+  {
+    "id": "72697823-d8b6-4337-b2c9-e4e3552d55ee",
+    "student_id": "STUDENT_001",
+    "question": "what is AI",
+    "ai_response": "I don't have that information in the available documents. The provided documents discuss specific applications and techniques within the field of AI, such as deep reinforcement learning, imitation learning, principal component analysis (PCA), independent component analysis (ICA), and neural networks, but they do not offer a general definition of AI itself.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what is AI",
+        "timestamp": "2025-12-04T11:37:00.360120"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss specific applications and techniques within the field of AI, such as deep reinforcement learning, imitation learning, principal component analysis (PCA), independent component analysis (ICA), and neural networks, but they do not offer a general definition of AI itself.",
+        "timestamp": "2025-12-04T11:37:00.360120"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI explicitly stated it lacked information on the definition of AI and found no relevant documents, indicating it couldn't adequately address the student's question.",
+    "created_at": "2025-12-04T11:37:00.360120",
+    "updated_at": "2025-12-04T11:37:00.360120",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "4106386c-cb7d-45e4-b87a-3a3641c713a1",
+    "student_id": "STUDENT_001",
+    "question": "What is Attention in transformer",
+    "ai_response": "Based on the provided documents, \"Attention\" in the context of a Transformer model can be understood as follows:\n\n*   **Definition of an Attention Function:** An attention function maps a query and a set of key-value pairs to an output. The query, keys, values, and output are all vectors. The output is calculated as a weighted sum (Document 4).\n\n*   **Self-Attention (Intra-attention):**\n    *   This mechanism relates different positions of a single sequence to compute a representation of that sequence (Document 2).\n    *   In a self-attention layer, all of the keys, values, and queries originate from the same source, specifically the output of the previous layer in the encoder (Document 1).\n    *   The Transformer model is notable for relying entirely on self-attention to compute representations of its input and output, without using sequence-aligned Recurrent Neural Networks (RNNs) or convolution (Document 2).\n    *   Self-attention has been successfully applied in various tasks, including reading comprehension, abstractive summarization, textual entailment, and learning task-independent sentence representations (Document 2).\n\n*   **Multi-Head Attention:**\n    *   Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions. A single attention head, by contrast, inhibits this joint attention due to averaging (Document 1).\n    *   The Transformer uses `h = 8` parallel attention layers, or heads. For each head, the dimensions `dk` and `dv` are set to `dmodel/h = 64`. Despite the reduced dimension per head, the total computational cost is comparable to single-head attention with full dimensionality (Document 1).\n    *   Multi-Head Attention is composed of several attention layers running in parallel (Document 4).\n\n*   **Applications of Multi-Head Attention in the Transformer:**\n    *   **Encoder Self-Attention:** The encoder contains self-attention layers where keys, values, and queries all come from the output of the previous layer in the encoder (Document 1).\n    *   **Encoder-Decoder Attention:** In these layers, queries come from the previous decoder layer, while memory keys and values come from the output of the encoder. This setup enables every position in the decoder to attend over all positions in the input sequence, mimicking typical encoder-decoder attention mechanisms in sequence-to-sequence models (Document 1).\n    *   **Decoder Self-Attention:** The decoder also includes a multi-head self-attention mechanism. This sub-layer is modified to prevent positions from attending to subsequent positions through masking. This, along with output embeddings being offset by one position, ensures that predictions for a given position `i` depend only on known outputs at positions less than `i` (Document 4).\n\n*   **Benefits of Attention in the Transformer:**\n    *   The Transformer reduces the number of operations required to relate signals from two arbitrary input or output positions to a constant number, which is an improvement over models like ConvS2S (linear) and ByteNet (logarithmic) where this grows with distance (Document 2).\n    *   Multi-head attention counteracts the reduced effective resolution that can occur due to averaging attention-weighted positions (Document 2).\n    *   Attention heads can exhibit behavior related to sentence structure and learn to perform different tasks (Document 5).",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "what is AI",
+        "timestamp": "2025-12-04T11:37:57.782093"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents discuss specific applications and techniques within the field of AI, such as deep reinforcement learning, imitation learning, principal component analysis (PCA), independent component analysis (ICA), and neural networks, but they do not offer a general definition of AI itself.",
+        "timestamp": "2025-12-04T11:37:57.782105"
+      },
+      {
+        "role": "user",
+        "content": "what is AI",
+        "timestamp": "2025-12-04T11:37:57.782107"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided texts discuss specific applications and concepts within the field of AI, such as deep reinforcement learning, imitation learning, neural networks, PCA, and ICA, but they do not offer a general definition of AI itself.",
+        "timestamp": "2025-12-04T11:37:57.782108"
+      },
+      {
+        "role": "user",
+        "content": "What is Attention in transformer",
+        "timestamp": "2025-12-04T11:37:57.782109"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the provided documents, \"Attention\" in the context of a Transformer model can be understood as follows:\n\n*   **Definition of an Attention Function:** An attention function maps a query and a set of key-value pairs to an output. The query, keys, values, and output are all vectors. The output is calculated as a weighted sum (Document 4).\n\n*   **Self-Attention (Intra-attention):**\n    *   This mechanism relates different positions of a single sequence to compute a representation of that sequence (Document 2).\n    *   In a self-attention layer, all of the keys, values, and queries originate from the same source, specifically the output of the previous layer in the encoder (Document 1).\n    *   The Transformer model is notable for relying entirely on self-attention to compute representations of its input and output, without using sequence-aligned Recurrent Neural Networks (RNNs) or convolution (Document 2).\n    *   Self-attention has been successfully applied in various tasks, including reading comprehension, abstractive summarization, textual entailment, and learning task-independent sentence representations (Document 2).\n\n*   **Multi-Head Attention:**\n    *   Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions. A single attention head, by contrast, inhibits this joint attention due to averaging (Document 1).\n    *   The Transformer uses `h = 8` parallel attention layers, or heads. For each head, the dimensions `dk` and `dv` are set to `dmodel/h = 64`. Despite the reduced dimension per head, the total computational cost is comparable to single-head attention with full dimensionality (Document 1).\n    *   Multi-Head Attention is composed of several attention layers running in parallel (Document 4).\n\n*   **Applications of Multi-Head Attention in the Transformer:**\n    *   **Encoder Self-Attention:** The encoder contains self-attention layers where keys, values, and queries all come from the output of the previous layer in the encoder (Document 1).\n    *   **Encoder-Decoder Attention:** In these layers, queries come from the previous decoder layer, while memory keys and values come from the output of the encoder. This setup enables every position in the decoder to attend over all positions in the input sequence, mimicking typical encoder-decoder attention mechanisms in sequence-to-sequence models (Document 1).\n    *   **Decoder Self-Attention:** The decoder also includes a multi-head self-attention mechanism. This sub-layer is modified to prevent positions from attending to subsequent positions through masking. This, along with output embeddings being offset by one position, ensures that predictions for a given position `i` depend only on known outputs at positions less than `i` (Document 4).\n\n*   **Benefits of Attention in the Transformer:**\n    *   The Transformer reduces the number of operations required to relate signals from two arbitrary input or output positions to a constant number, which is an improvement over models like ConvS2S (linear) and ByteNet (logarithmic) where this grows with distance (Document 2).\n    *   Multi-head attention counteracts the reduced effective resolution that can occur due to averaging attention-weighted positions (Document 2).\n    *   Attention heads can exhibit behavior related to sentence structure and learn to perform different tasks (Document 5).",
+        "timestamp": "2025-12-04T11:37:57.782110"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI answer was unclear or insufficient | Notes: Manish Sharma - AI",
+    "created_at": "2025-12-04T11:37:57.784715",
+    "updated_at": "2025-12-04T11:37:57.784715",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
   }
 ]

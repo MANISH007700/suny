@@ -17,6 +17,7 @@ transformers
 
 # PDF Processing
 pypdf
+PyPDF2
 pdfplumber
 
 # Vector Databases
