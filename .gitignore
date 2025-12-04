@@ -28,8 +28,7 @@ wheels/
 *.egg
 
 # Data directories
-backend/data/pdfs/*.pdf
-backend/data/processed_text/
+
 backend/vector_store/
 
 # IDEs
