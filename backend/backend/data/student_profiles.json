@@ -6,9 +6,9 @@
     "gpa": null,
     "completed_courses": [],
     "current_courses": [],
-    "risk_level": "medium",
-    "total_escalations": 4,
-    "last_interaction": "2025-12-04T11:37:57.787491"
+    "risk_level": "high",
+    "total_escalations": 5,
+    "last_interaction": "2025-12-04T16:52:17.566200"
   },
   "STUDENT_009": {
     "student_id": "STUDENT_009",

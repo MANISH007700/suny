@@ -1,13 +1,10 @@
 import streamlit as st
 import requests
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 import logging
 from typing import Dict
-import json
-import plotly.graph_objects as go
-import plotly.express as px
-from styles import get_main_styles
+import numpy as np
 
 # === Config & Logging ===
 logging.basicConfig(level=logging.INFO)
@@ -22,21 +19,389 @@ st.set_page_config(
 
 API_BASE = "http://localhost:8888"
 
-# === Apply Unified Design System ===
-st.markdown(get_main_styles(), unsafe_allow_html=True)
+# === Modern CSS - Light Theme with Company Colors ===
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    * {font-family: 'Inter', sans-serif;}
+    
+    /* Light theme background */
+    .main {
+        background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #07407b 0%, #0b0f3b 100%);
+        border-right: 2px solid #7fcdee;
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: #fafafa !important;
+    }
+    
+    /* Headers */
+    h1 {
+        color: #07407b;
+        font-weight: 700;
+        text-align: left;
+        margin-bottom: 0.5rem;
+    }
+    
+    h2 {
+        color: #07407b;
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    h3 {
+        color: #0b0f3b;
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    /* Buttons */
+    .stButton>button {
+        background: linear-gradient(135deg, #07407b 0%, #0b0f3b 100%);
+        color: #fafafa;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(7, 64, 123, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(7, 64, 123, 0.4);
+        background: linear-gradient(135deg, #0b0f3b 0%, #07407b 100%);
+    }
+    
+    /* Secondary buttons */
+    .stButton>button[kind="secondary"] {
+        background: linear-gradient(135deg, #f7931e 0%, #ff8c42 100%);
+        color: #fafafa;
+    }
+    
+    .stButton>button[kind="secondary"]:hover {
+        background: linear-gradient(135deg, #ff8c42 0%, #f7931e 100%);
+    }
+    
+    /* Metric cards - clean tiles */
+    [data-testid="stMetric"] {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(7, 64, 123, 0.08);
+        border: 1px solid #E9ECEF;
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stMetric"]:hover {
+        box-shadow: 0 4px 16px rgba(7, 64, 123, 0.12);
+        transform: translateY(-2px);
+    }
+    
+    [data-testid="stMetric"] label {
+        color: #6C757D;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    [data-testid="stMetric"] [data-testid="stMetricValue"] {
+        color: #07407b;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    /* Card containers */
+    .dashboard-card {
+        background: white;
+        padding: 1.8rem;
+        border-radius: 20px;
+        box-shadow: 0 2px 12px rgba(7, 64, 123, 0.08);
+        border: 1px solid #E9ECEF;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .dashboard-card:hover {
+        box-shadow: 0 4px 20px rgba(7, 64, 123, 0.12);
+    }
+    
+    .gradient-card {
+        background: linear-gradient(135deg, #07407b 0%, #0b0f3b 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(7, 64, 123, 0.2);
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+    
+    .gradient-card-orange {
+        background: linear-gradient(135deg, #f7931e 0%, #ff6b6b 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 4px 20px rgba(247, 147, 30, 0.2);
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+    
+    /* Info boxes */
+    .info-box {
+        background: linear-gradient(135deg, #7fcdee20 0%, #7fcdee10 100%);
+        border-left: 4px solid #7fcdee;
+        padding: 1.2rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        color: #07407b;
+    }
+    
+    .warning-box {
+        background: linear-gradient(135deg, #f7931e20 0%, #f7931e10 100%);
+        border-left: 4px solid #f7931e;
+        padding: 1.2rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        color: #0b0f3b;
+    }
+    
+    .success-box {
+        background: linear-gradient(135deg, #28a74520 0%, #28a74510 100%);
+        border-left: 4px solid #28a745;
+        padding: 1.2rem;
+        border-radius: 12px;
+        margin: 1rem 0;
+        color: #0b0f3b;
+    }
+    
+    /* Chat messages for student mode */
+    .chat-message {
+        padding: 1.25rem;
+        border-radius: 16px;
+        margin-bottom: 1rem;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {opacity: 0; transform: translateY(10px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+    
+    .user-message {
+        background: linear-gradient(135deg, #7fcdee 0%, #7fcdee 100%);
+        color: #0b0f3b;
+        margin-left: 15%;
+        box-shadow: 0 2px 12px rgba(127, 205, 238, 0.3);
+        border: 1px solid #7fcdee;
+    }
+    
+    .assistant-message {
+        background: white;
+        color: #0b0f3b;
+        margin-right: 15%;
+        border: 1px solid #DEE2E6;
+        box-shadow: 0 2px 8px rgba(7, 64, 123, 0.08);
+    }
+    
+    .citation-box {
+        background: #F8F9FA;
+        border-left: 4px solid #07407b;
+        padding: 1rem;
+        margin: 0.75rem 0;
+        border-radius: 8px;
+        border: 1px solid #E9ECEF;
+    }
+    
+    .citation-title {
+        color: #07407b;
+        font-weight: 600;
+    }
+    
+    /* Escalation notice */
+    .escalation-notice {
+        background: white;
+        border: 2px solid #f7931e;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        box-shadow: 0 4px 16px rgba(247, 147, 30, 0.15);
+    }
+    
+    /* Expander styling */
+    [data-testid="stExpander"] {
+        background: white;
+        border: 1px solid #E9ECEF;
+        border-radius: 12px;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 2px 8px rgba(7, 64, 123, 0.06);
+    }
+    
+    /* Student/Escalation cards */
+    .student-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        border-left: 5px solid #07407b;
+        box-shadow: 0 2px 10px rgba(7, 64, 123, 0.08);
+        margin: 1rem 0;
+        transition: all 0.3s ease;
+    }
+    
+    .student-card:hover {
+        box-shadow: 0 4px 16px rgba(7, 64, 123, 0.12);
+        transform: translateX(4px);
+    }
+    
+    .student-card-critical {
+        border-left-color: #dc3545;
+    }
+    
+    .student-card-high {
+        border-left-color: #f7931e;
+    }
+    
+    .student-card-medium {
+        border-left-color: #ffc107;
+    }
+    
+    .student-card-low {
+        border-left-color: #28a745;
+    }
+    
+    /* Stats tiles */
+    .stat-tile {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 2px 12px rgba(7, 64, 123, 0.08);
+        border: 1px solid #E9ECEF;
+        margin-bottom: 1rem;
+    }
+    
+    .stat-tile-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #07407b;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-tile-label {
+        font-size: 0.875rem;
+        color: #6C757D;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    /* Footer */
+    .footer {
+        text-align: center;
+        color: #6C757D;
+        font-size: 0.85rem;
+        padding: 2rem 0;
+        border-top: 1px solid #E9ECEF;
+        margin-top: 3rem;
+    }
+    
+    .footer-highlight {
+        color: #07407b;
+        font-weight: 600;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: white;
+        padding: 0.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(7, 64, 123, 0.06);
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: transparent;
+        color: #6C757D;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #07407b 0%, #0b0f3b 100%);
+        color: white;
+    }
+    
+    /* Spinner */
+    .stSpinner > div {
+        border-top-color: #07407b !important;
+    }
+    
+    /* Block container */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 6rem;
+        max-width: 1400px;
+    }
+    
+    /* Remove Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Section headers */
+    .section-header {
+        color: #07407b;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-top: 2.5rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid #7fcdee;
+    }
+    
+    /* Mini stat cards */
+    .mini-stat {
+        background: linear-gradient(135deg, #ffffff 0%, #F8F9FA 100%);
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid #E9ECEF;
+        text-align: center;
+    }
+    
+    .mini-stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #07407b;
+    }
+    
+    .mini-stat-label {
+        font-size: 0.75rem;
+        color: #6C757D;
+        margin-top: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # === Session State ===
 for key in ['messages', 'citations', 'initialized', 'auto_init_done', 'study_materials', 
-            'student_id', 'selected_escalation', 'user_mode', 'show_escalation_form',
+            'student_id', 'selected_escalation', 'advisor_mode', 'admin_mode', 'show_escalation_form',
             'last_question', 'last_answer', 'last_escalation_id']:
     if key not in st.session_state:
         if key in ['messages', 'citations', 'study_materials']:
             st.session_state[key] = []
         elif key == 'student_id':
             st.session_state[key] = "STUDENT_001"  # Default student ID
-        elif key == 'user_mode':
-            st.session_state[key] = "Student"  # Default mode: Student, Advisor, or Administrator
-        elif key == 'show_escalation_form':
+        elif key in ['advisor_mode', 'admin_mode', 'show_escalation_form']:
             st.session_state[key] = False
         elif key in ['last_question', 'last_answer']:
             st.session_state[key] = ""
@@ -119,7 +484,7 @@ if not st.session_state.auto_init_done:
 # === Sidebar ===
 with st.sidebar:
     st.markdown("# 📚 SUNY Academic Assistant")
-    st.markdown("<small style='color: #E5E7EB;'>RAG + Study Tools + Analytics</small>", unsafe_allow_html=True)
+    st.markdown("<small style='color: #64748b;'>RAG + Study Tools</small>", unsafe_allow_html=True)
     st.markdown("---")
     
     # Mode toggle
@@ -127,19 +492,13 @@ with st.sidebar:
     mode = st.radio(
         "Select Mode",
         ["🎓 Student", "👨‍🏫 Advisor", "📊 Administrator"],
-        index=["Student", "Advisor", "Administrator"].index(st.session_state.get("user_mode", "Student")),
+        index=2 if st.session_state.admin_mode else (1 if st.session_state.advisor_mode else 0),
         key="mode_radio"
     )
+    st.session_state.advisor_mode = (mode == "👨‍🏫 Advisor")
+    st.session_state.admin_mode = (mode == "📊 Administrator")
     
-    # Map emoji labels to plain text
-    mode_map = {
-        "🎓 Student": "Student",
-        "👨‍🏫 Advisor": "Advisor",
-        "📊 Administrator": "Administrator"
-    }
-    st.session_state.user_mode = mode_map[mode]
-    
-    if st.session_state.user_mode == "Student":
+    if not st.session_state.advisor_mode:
         # Student mode: show student ID input
         st.session_state.student_id = st.text_input(
             "Student ID",
@@ -209,23 +568,23 @@ with st.sidebar:
         st.rerun()
 
 # === TABS ===
-if st.session_state.user_mode == "Administrator":
-    # Administrator mode: Show analytics dashboard
-    tab_admin = st.container()
+if st.session_state.admin_mode:
+    # Administrator mode: Analytics dashboard
+    tab4 = st.container()
     tab1 = None
     tab2 = None
     tab3 = None
-elif st.session_state.user_mode == "Advisor":
+elif st.session_state.advisor_mode:
     # Advisor mode: Only show escalation dashboard
     tab3 = st.container()
     tab1 = None
     tab2 = None
-    tab_admin = None
+    tab4 = None
 else:
     # Student mode: Show chat and study tools
     tab1, tab2 = st.tabs(["💬 Academic Guidance Chat", "📖 Study Tools"])
     tab3 = None
-    tab_admin = None
+    tab4 = None
 
 # === TAB 1: Academic Chat ===
 if tab1:
@@ -293,7 +652,7 @@ if tab1:
             send_clicked = st.button("📤 Send", key="send_tab", type="primary", use_container_width=True)
         
         with col_escalate:
-            if st.session_state.user_mode == "Student" and st.session_state.messages:
+            if not st.session_state.advisor_mode and st.session_state.messages:
                 escalate_clicked = st.button("🆘 Escalate to Advisor", key="escalate_btn", use_container_width=True)
             else:
                 escalate_clicked = False
@@ -307,7 +666,7 @@ if tab1:
                     resp = send_message(
                         user_prompt, 
                         st.session_state.get("top_k_slider", 5),
-                        st.session_state.get("student_id") if st.session_state.user_mode == "Student" else None
+                        st.session_state.get("student_id") if not st.session_state.advisor_mode else None
                     )
                     answer = resp.get("answer", "No answer")
                     st.session_state.messages.append({"role": "assistant", "content": answer})
@@ -518,10 +877,10 @@ if tab2:
                     q = card.get("question", "")
                     a = card.get("answer", "")
                     st.markdown(f"""
-                    <div style="background:#FFFFFF; border:1px solid #E5E7EB; border-radius:16px; padding:1.3rem; margin:1rem 0; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);">
-                        <strong style="color:#1D4ED8;">Q{i+1}: {q}</strong><br><br>
-                        <details><summary style="color:#64748B; cursor:pointer;">Show Answer</summary>
-                        <p style="color:#1E293B; margin-top:0.8rem;">{a}</p></details>
+                    <div style="background:rgba(30,41,59,0.9); border:1px solid rgba(94,234,212,0.3); border-radius:16px; padding:1.3rem; margin:1rem 0;">
+                        <strong style="color:#5eead4;">Q{i+1}: {q}</strong><br><br>
+                        <details><summary style="color:#94a3b8; cursor:pointer;">Show Answer</summary>
+                        <p style="color:#e2e8f0; margin-top:0.8rem;">{a}</p></details>
                     </div>
                     """, unsafe_allow_html=True)
 
@@ -549,16 +908,16 @@ if tab2:
                     st.markdown(f"**Q{i+1}.** {q.get('question')}")
                     for j, opt in enumerate(q.get("options", [])):
                         if j == q.get("correct_index"):
-                            st.markdown(f'<span style="color:#22C55E; font-weight:600;">✅ {opt}</span>', unsafe_allow_html=True)
+                            st.markdown(f'<span style="color:#5eead4;">✅ {opt}</span>', unsafe_allow_html=True)
                         else:
-                            st.markdown(f'<span style="color:#64748B;">• {opt}</span>', unsafe_allow_html=True)
+                            st.markdown(f'<span style="color:#94a3b8;">• {opt}</span>', unsafe_allow_html=True)
 
                     explanation = q.get("explanation", "")
                     if explanation:
                         st.markdown(f"""
                         <details style="margin:1rem 0;">
-                            <summary style="color:#3B82F6; cursor:pointer; font-weight:600;">💡 Show Explanation</summary>
-                            <p style="color:#1E293B; margin-top:0.5rem; padding-left:0.5rem;">{explanation}</p>
+                            <summary style="color:#5eead4; cursor:pointer; font-weight:600;">💡 Show Explanation</summary>
+                            <p style="color:#cbd5e1; margin-top:0.5rem; padding-left:0.5rem;">{explanation}</p>
                         </details>
                         """, unsafe_allow_html=True)
                     st.markdown("---")
@@ -625,69 +984,42 @@ if tab2:
                         st.markdown("---")
 
 # === TAB 3: Advisor Dashboard ===
-if tab3 and st.session_state.user_mode == "Advisor":
+if tab3 and st.session_state.advisor_mode:
     with tab3:
-        st.markdown("# 🎯 Advisor Dashboard - Escalation Queue")
-        st.markdown("### Monitor and respond to escalated student questions")
-        st.info("👨‍🏫 **Advisor Mode Active** | Viewing escalations only | Switch to Student mode in sidebar to access chat and study tools")
+        st.markdown("# 🎯 Advisor Dashboard")
+        st.markdown('<div class="info-box">👨‍🏫 <strong>Advisor Mode Active</strong> | Monitor escalations and support students | Switch to Student mode in sidebar for chat</div>', unsafe_allow_html=True)
         
-        # Dashboard Stats
+        # Dashboard Stats - Clean Tiles
+        st.markdown('<p class="section-header">📊 Overview</p>', unsafe_allow_html=True)
+        
         try:
             stats_resp = requests.get(f"{API_BASE}/advisor/dashboard/stats", timeout=10)
             if stats_resp.status_code == 200:
                 stats = stats_resp.json()
                 
+                # Stats Grid
                 col1, col2, col3, col4, col5 = st.columns(5)
-                
                 with col1:
-                    st.markdown(f"""
-                    <div class="metric-card-gradient-info" style="text-align:center;">
-                        <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">TOTAL ESCALATIONS</div>
-                        <div style="font-size:2.5rem; font-weight:700;">{stats.get("total_escalations", 0)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
+                    st.metric("Total Escalations", stats.get("total_escalations", 0))
                 with col2:
-                    st.markdown(f"""
-                    <div class="metric-card-gradient-warning" style="text-align:center;">
-                        <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">PENDING</div>
-                        <div style="font-size:2.5rem; font-weight:700;">{stats.get("pending", 0)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
+                    st.metric("⏳ Pending", stats.get("pending", 0))
                 with col3:
-                    st.markdown(f"""
-                    <div class="metric-card-gradient" style="text-align:center;">
-                        <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">IN PROGRESS</div>
-                        <div style="font-size:2.5rem; font-weight:700;">{stats.get("in_progress", 0)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
+                    st.metric("🔄 In Progress", stats.get("in_progress", 0))
                 with col4:
-                    st.markdown(f"""
-                    <div class="metric-card-gradient-success" style="text-align:center;">
-                        <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">RESOLVED</div>
-                        <div style="font-size:2.5rem; font-weight:700;">{stats.get("resolved", 0)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
+                    st.metric("✅ Resolved", stats.get("resolved", 0))
                 with col5:
-                    st.markdown(f"""
-                    <div class="metric-card-gradient-danger" style="text-align:center;">
-                        <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">HIGH RISK STUDENTS</div>
-                        <div style="font-size:2.5rem; font-weight:700;">{stats.get("high_risk_students", 0)}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-                
-                st.markdown("---")
+                    st.metric("⚠️ High Risk", stats.get("high_risk_students", 0))
                 
                 # Visualizations
-                st.markdown("### 📊 Escalation Analytics")
+                st.markdown('<p class="section-header">📊 Analytics</p>', unsafe_allow_html=True)
                 
                 viz_col1, viz_col2, viz_col3 = st.columns(3)
                 
                 with viz_col1:
+                    st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
                     # Pie Chart - Status Distribution
+                    import plotly.graph_objects as go
+                    
                     status_data = {
                         'Pending': stats.get("pending", 0),
                         'In Progress': stats.get("in_progress", 0),
@@ -698,27 +1030,28 @@ if tab3 and st.session_state.user_mode == "Advisor":
                         labels=list(status_data.keys()),
                         values=list(status_data.values()),
                         hole=0.4,
-                        marker=dict(colors=['#FACC15', '#3B82F6', '#22C55E']),
+                        marker=dict(colors=['#f7931e', '#07407b', '#28a745']),
                         textinfo='label+percent',
                         textposition='auto',
                     )])
                     
                     fig_pie.update_layout(
-                        title="Escalation Status Distribution",
+                        title=dict(text="Status Distribution", font=dict(size=14, color='#07407b', family='Inter')),
                         showlegend=True,
-                        height=350,
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        font=dict(color='#1E293B', size=12),
-                        title_font=dict(size=16, color='#1D4ED8'),
-                        margin=dict(l=20, r=20, t=40, b=20)
+                        height=320,
+                        paper_bgcolor='rgba(255,255,255,0)',
+                        plot_bgcolor='rgba(255,255,255,0)',
+                        font=dict(color='#0b0f3b', size=11, family='Inter'),
+                        margin=dict(l=10, r=10, t=40, b=10),
+                        legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5)
                     )
                     
                     st.plotly_chart(fig_pie, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
                 with viz_col2:
+                    st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
                     # Bar Chart - Priority Distribution
-                    # Get all escalations to calculate priority distribution
                     try:
                         all_esc_resp = requests.get(f"{API_BASE}/advisor/escalations", timeout=10)
                         if all_esc_resp.status_code == 200:
@@ -734,10 +1067,7 @@ if tab3 and st.session_state.user_mode == "Advisor":
                                 y=[priority_counts[1], priority_counts[2], priority_counts[3], 
                                    priority_counts[4], priority_counts[5]],
                                 marker=dict(
-                                    color=[priority_counts[1], priority_counts[2], priority_counts[3], 
-                                           priority_counts[4], priority_counts[5]],
-                                    colorscale=[[0, '#22C55E'], [0.5, '#FACC15'], [1, '#EF4444']],
-                                    showscale=False
+                                    color=['#28a745', '#7fcdee', '#f7931e', '#ff6b6b', '#dc3545']
                                 ),
                                 text=[priority_counts[1], priority_counts[2], priority_counts[3], 
                                       priority_counts[4], priority_counts[5]],
@@ -745,17 +1075,16 @@ if tab3 and st.session_state.user_mode == "Advisor":
                             )])
                             
                             fig_bar.update_layout(
-                                title="Priority Level Distribution",
-                                xaxis_title="Priority Level",
-                                yaxis_title="Number of Escalations",
-                                height=350,
-                                paper_bgcolor='rgba(0,0,0,0)',
-                                plot_bgcolor='rgba(0,0,0,0)',
-                                font=dict(color='#1E293B', size=12),
-                                title_font=dict(size=16, color='#1D4ED8'),
-                                xaxis=dict(gridcolor='#E5E7EB'),
-                                yaxis=dict(gridcolor='#E5E7EB'),
-                                margin=dict(l=20, r=20, t=40, b=20)
+                                title=dict(text="Priority Distribution", font=dict(size=14, color='#07407b', family='Inter')),
+                                xaxis_title="",
+                                yaxis_title="Count",
+                                height=320,
+                                paper_bgcolor='rgba(255,255,255,0)',
+                                plot_bgcolor='rgba(255,255,255,0)',
+                                font=dict(color='#0b0f3b', size=11, family='Inter'),
+                                xaxis=dict(gridcolor='rgba(7,64,123,0.1)', showgrid=False),
+                                yaxis=dict(gridcolor='rgba(7,64,123,0.1)'),
+                                margin=dict(l=10, r=10, t=40, b=10)
                             )
                             
                             st.plotly_chart(fig_bar, use_container_width=True)
@@ -763,8 +1092,10 @@ if tab3 and st.session_state.user_mode == "Advisor":
                             st.info("Unable to load priority distribution")
                     except Exception as e:
                         st.info(f"Chart data unavailable: {e}")
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
                 with viz_col3:
+                    st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
                     # Risk Level Distribution
                     try:
                         students_resp = requests.get(f"{API_BASE}/advisor/students", timeout=10)
@@ -781,7 +1112,7 @@ if tab3 and st.session_state.user_mode == "Advisor":
                                 y=[risk_counts['low'], risk_counts['medium'], 
                                    risk_counts['high'], risk_counts['critical']],
                                 marker=dict(
-                                    color=['#22C55E', '#FACC15', '#EF4444', '#DC2626']
+                                    color=['#28a745', '#ffc107', '#f7931e', '#dc3545']
                                 ),
                                 text=[risk_counts['low'], risk_counts['medium'], 
                                       risk_counts['high'], risk_counts['critical']],
@@ -789,17 +1120,16 @@ if tab3 and st.session_state.user_mode == "Advisor":
                             )])
                             
                             fig_risk.update_layout(
-                                title="Student Risk Levels",
-                                xaxis_title="Risk Level",
-                                yaxis_title="Number of Students",
-                                height=350,
-                                paper_bgcolor='rgba(0,0,0,0)',
-                                plot_bgcolor='rgba(0,0,0,0)',
-                                font=dict(color='#1E293B', size=12),
-                                title_font=dict(size=16, color='#1D4ED8'),
-                                xaxis=dict(gridcolor='#E5E7EB'),
-                                yaxis=dict(gridcolor='#E5E7EB'),
-                                margin=dict(l=20, r=20, t=40, b=20)
+                                title=dict(text="Student Risk Levels", font=dict(size=14, color='#07407b', family='Inter')),
+                                xaxis_title="",
+                                yaxis_title="Students",
+                                height=320,
+                                paper_bgcolor='rgba(255,255,255,0)',
+                                plot_bgcolor='rgba(255,255,255,0)',
+                                font=dict(color='#0b0f3b', size=11, family='Inter'),
+                                xaxis=dict(gridcolor='rgba(7,64,123,0.1)', showgrid=False),
+                                yaxis=dict(gridcolor='rgba(7,64,123,0.1)'),
+                                margin=dict(l=10, r=10, t=40, b=10)
                             )
                             
                             st.plotly_chart(fig_risk, use_container_width=True)
@@ -807,25 +1137,25 @@ if tab3 and st.session_state.user_mode == "Advisor":
                             st.info("Unable to load risk distribution")
                     except Exception as e:
                         st.info(f"Chart data unavailable: {e}")
-                
-                st.markdown("---")
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
         except Exception as e:
             st.error(f"Could not load dashboard stats: {e}")
         
         # Filters
+        st.markdown('<p class="section-header">📋 Escalation Queue</p>', unsafe_allow_html=True)
+        
         col1, col2, col3 = st.columns(3)
         with col1:
             filter_status = st.selectbox(
-                "Filter by Status",
+                "🔍 Filter by Status",
                 ["All", "pending", "in_progress", "resolved"],
                 key="filter_status"
             )
         with col2:
-            filter_priority = st.slider("Min Priority", 1, 5, 1, key="filter_priority")
+            filter_priority = st.slider("⭐ Min Priority", 1, 5, 1, key="filter_priority")
         with col3:
-            if st.button("🔄 Refresh Dashboard", use_container_width=True, type="primary"):
-                # Clear any cached data
+            if st.button("🔄 Refresh", use_container_width=True, type="primary"):
                 if 'escalations_cache' in st.session_state:
                     del st.session_state['escalations_cache']
                 st.rerun()
@@ -847,16 +1177,9 @@ if tab3 and st.session_state.user_mode == "Advisor":
                 st.caption(f"💡 Debug: Loaded {len(escalations)} escalation(s) from API | Filters: Status={filter_status}, Priority>={filter_priority}")
                 
                 if not escalations:
-                    st.info("📭 No escalations found with current filters")
-                    st.info("💡 Try clicking '🔄 Refresh Dashboard' or change filter settings")
-                    
-                    # Debug: Show raw API response
-                    with st.expander("🔍 Debug: View Raw API Response"):
-                        st.json(esc_resp.json())
-                        st.code(f"API URL: {API_BASE}/advisor/escalations")
-                        st.code(f"Params: {params}")
+                    st.markdown('<div class="info-box">📭 <strong>No escalations found</strong> with current filters. Try adjusting your filter settings or refresh the dashboard.</div>', unsafe_allow_html=True)
                 else:
-                    st.markdown(f"### 📋 {len(escalations)} Escalation(s)")
+                    st.markdown(f'<div style="background:linear-gradient(135deg, #07407b 0%, #0b0f3b 100%); color:white; padding:1rem; border-radius:12px; margin:1rem 0;"><h3 style="margin:0; color:white;">📋 {len(escalations)} Escalation(s)</h3></div>', unsafe_allow_html=True)
                     
                     # Display each escalation
                     for esc in escalations:
@@ -864,7 +1187,7 @@ if tab3 and st.session_state.user_mode == "Advisor":
                             f"🔔 [{esc['status'].upper()}] Student: {esc['student_id']} | "
                             f"Priority: {'⭐' * esc.get('priority', 1)} | "
                             f"{esc['created_at'][:10]}",
-                            expanded=False
+                            expanded=(esc['status'] == 'pending')
                         ):
                             # Two column layout
                             col_left, col_right = st.columns([2, 1])
@@ -872,17 +1195,17 @@ if tab3 and st.session_state.user_mode == "Advisor":
                             with col_left:
                                 # Question and Response
                                 st.markdown("#### 💬 Student Question")
-                                st.markdown(f'<div style="background:#DBEAFE; padding:1rem; border-radius:12px; border-left:4px solid #3B82F6; color:#1E293B;">{esc["question"]}</div>', 
+                                st.markdown(f'<div style="background:#F8F9FA; padding:1.2rem; border-radius:12px; border-left:5px solid #07407b; color:#0b0f3b; box-shadow: 0 2px 8px rgba(7,64,123,0.08);">{esc["question"]}</div>', 
                                           unsafe_allow_html=True)
                                 
                                 st.markdown("#### 🤖 AI Response")
-                                st.markdown(f'<div style="background:#FFFFFF; padding:1rem; border-radius:12px; border:1px solid #E5E7EB; color:#1E293B;">{esc["ai_response"]}</div>', 
+                                st.markdown(f'<div style="background:white; padding:1.2rem; border-radius:12px; border:1px solid #E9ECEF; color:#0b0f3b; box-shadow: 0 2px 8px rgba(7,64,123,0.06);">{esc["ai_response"]}</div>', 
                                           unsafe_allow_html=True)
                                 
                                 st.markdown("#### 📝 Escalation Reason")
-                                st.warning(f"⚠️ {esc['escalation_reason']}")
+                                st.markdown(f'<div class="warning-box">⚠️ <strong>{esc["escalation_reason"]}</strong></div>', unsafe_allow_html=True)
                                 
-                                # Conversation History - Using checkbox instead of nested expander
+                                # Conversation History
                                 if esc.get("conversation_history"):
                                     show_history = st.checkbox("💬 View Full Conversation History", key=f"history_{esc['id']}")
                                     if show_history:
@@ -893,12 +1216,12 @@ if tab3 and st.session_state.user_mode == "Advisor":
                                             timestamp = msg.get("timestamp", "")[:16]
                                             
                                             if role == "user":
-                                                st.markdown(f'**🎓 Student** ({timestamp})')
-                                                st.markdown(f'<div style="background:#DBEAFE; padding:0.5rem; border-radius:8px; margin-bottom:0.5rem; color:#1E293B;">{content}</div>', 
+                                                st.markdown(f'**🎓 Student** <small style="color:#6C757D;">({timestamp})</small>', unsafe_allow_html=True)
+                                                st.markdown(f'<div style="background:linear-gradient(135deg, #7fcdee20 0%, #7fcdee10 100%); padding:0.8rem; border-radius:8px; margin-bottom:0.5rem; border-left:3px solid #7fcdee; color:#0b0f3b;">{content}</div>', 
                                                           unsafe_allow_html=True)
                                             else:
-                                                st.markdown(f'**🤖 AI** ({timestamp})')
-                                                st.markdown(f'<div style="background:#F8FAFC; padding:0.5rem; border-radius:8px; margin-bottom:0.5rem; border:1px solid #E5E7EB; color:#1E293B;">{content}</div>', 
+                                                st.markdown(f'**🤖 AI** <small style="color:#6C757D;">({timestamp})</small>', unsafe_allow_html=True)
+                                                st.markdown(f'<div style="background:#F8F9FA; padding:0.8rem; border-radius:8px; margin-bottom:0.5rem; border-left:3px solid #ADB5BD; color:#0b0f3b;">{content}</div>', 
                                                           unsafe_allow_html=True)
                                         st.markdown("---")
                                 
@@ -936,21 +1259,21 @@ if tab3 and st.session_state.user_mode == "Advisor":
                                         # Risk level badge
                                         risk_level = profile.get("risk_level", "low")
                                         risk_colors = {
-                                            "low": "#10b981",
-                                            "medium": "#f59e0b",
-                                            "high": "#ef4444",
-                                            "critical": "#dc2626"
+                                            "low": "#28a745",
+                                            "medium": "#ffc107",
+                                            "high": "#f7931e",
+                                            "critical": "#dc3545"
                                         }
-                                        risk_color = risk_colors.get(risk_level, "#64748b")
+                                        risk_color = risk_colors.get(risk_level, "#6C757D")
                                         
                                         st.markdown(f"""
-                                        <div style="background:#FFFFFF; padding:1rem; border-radius:12px; border:1px solid #E5E7EB; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); word-wrap:break-word; overflow-wrap:break-word;">
-                                            <p style="margin:0.3rem 0; word-wrap:break-word; color:#1E293B;"><strong>Name:</strong><br/>{profile.get('name', 'Unknown')}</p>
-                                            <p style="margin:0.3rem 0; color:#1E293B;"><strong>Major:</strong><br/>{profile.get('major', 'Undeclared')}</p>
-                                            <p style="margin:0.3rem 0; color:#1E293B;"><strong>GPA:</strong> {profile.get('gpa', 'N/A')}</p>
-                                            <p style="margin:0.3rem 0; color:#1E293B;"><strong>Risk Level:</strong> <span style="color:{risk_color}; font-weight:bold;">{risk_level.upper()}</span></p>
-                                            <p style="margin:0.3rem 0; color:#1E293B;"><strong>Total Escalations:</strong> {profile.get('total_escalations', 0)}</p>
-                                            <p style="margin:0.3rem 0; color:#1E293B;"><strong>Last Interaction:</strong><br/>{profile.get('last_interaction', 'N/A')[:10]}</p>
+                                        <div style="background:white; padding:1.2rem; border-radius:12px; border:2px solid #E9ECEF; word-wrap:break-word; overflow-wrap:break-word; box-shadow: 0 2px 8px rgba(7,64,123,0.08);">
+                                            <p style="margin:0.5rem 0; color:#0b0f3b; word-wrap:break-word;"><strong>Name:</strong><br/><span style="color:#07407b; font-weight:600;">{profile.get('name', 'Unknown')}</span></p>
+                                            <p style="margin:0.5rem 0; color:#0b0f3b;"><strong>Major:</strong><br/><span style="color:#6C757D;">{profile.get('major', 'Undeclared')}</span></p>
+                                            <p style="margin:0.5rem 0; color:#0b0f3b;"><strong>GPA:</strong> <span style="color:#07407b; font-weight:600; font-size:1.1rem;">{profile.get('gpa', 'N/A')}</span></p>
+                                            <p style="margin:0.5rem 0; color:#0b0f3b;"><strong>Risk Level:</strong> <span style="background:{risk_color}; color:white; padding:0.3rem 0.6rem; border-radius:6px; font-weight:bold; font-size:0.85rem;">{risk_level.upper()}</span></p>
+                                            <p style="margin:0.5rem 0; color:#0b0f3b;"><strong>Total Escalations:</strong> <span style="color:#07407b; font-weight:600;">{profile.get('total_escalations', 0)}</span></p>
+                                            <p style="margin:0.5rem 0; color:#0b0f3b;"><strong>Last Interaction:</strong><br/><span style="color:#6C757D;">{profile.get('last_interaction', 'N/A')[:10]}</span></p>
                                         </div>
                                         """, unsafe_allow_html=True)
                                         
@@ -1173,8 +1496,7 @@ if tab3 and st.session_state.user_mode == "Advisor":
                         with st.expander(
                             f"⚠️ {student['name']} ({student['student_id']}) - "
                             f"{student['escalation_count']} escalations - "
-                            f"Risk: {student['risk_level'].upper()}",
-                            expanded=False
+                            f"Risk: {student['risk_level'].upper()}"
                         ):
                             st.write(f"**Student ID:** {student['student_id']}")
                             st.write(f"**Name:** {student['name']}")
@@ -1190,746 +1512,692 @@ if tab3 and st.session_state.user_mode == "Advisor":
             pass
 
 # === TAB 4: Administrator Analytics Dashboard ===
-if tab_admin and st.session_state.user_mode == "Administrator":
-    with tab_admin:
-        st.markdown("""
-        <div class="admin-banner">
-            <div>
-                <h1 style="margin:0; color:#FFFFFF;">📊 Administrator Analytics Dashboard</h1>
-                <p style="margin:0; color:#E5E7EB;">Comprehensive system insights and student behavior analytics</p>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+if tab4 and st.session_state.admin_mode:
+    with tab4:
+        st.markdown("# 📊 Administrator Analytics")
+        st.markdown('<div class="info-box">📊 <strong>Administrator Mode Active</strong> | Viewing comprehensive system analytics | Switch modes in sidebar</div>', unsafe_allow_html=True)
         
-        # Load analytics data
+        # === OVERVIEW METRICS ===
+        st.markdown('<p class="section-header">📈 System Overview</p>', unsafe_allow_html=True)
+        
         try:
-            with open("/Users/DLP-I516-206/Desktop/ubi-code/suny/suny/backend/backend/data/analytics_data.json", "r") as f:
-                analytics_data = json.load(f)
-            
-            question_logs = analytics_data.get("question_logs", [])
-            
-            # ========== SECTION 1: USAGE & ENGAGEMENT OVERVIEW ==========
-            st.markdown("## 📈 Usage & Engagement Overview")
-            st.markdown("---")
-            
-            # Key Metrics Row
-            col1, col2, col3, col4, col5 = st.columns(5)
-            
-            # Total questions
-            total_questions = len(question_logs)
-            
-            # Active users (unique students)
-            active_users = len(set([log["student_id"] for log in question_logs]))
-            
-            # Calculate daily active users (last 7 days)
-            recent_logs = [log for log in question_logs if 
-                          (datetime.now() - datetime.fromisoformat(log["timestamp"])).days <= 7]
-            daily_active = len(set([log["student_id"] for log in recent_logs]))
-            
-            # Average satisfaction
-            ratings = [log.get("satisfaction_rating", 0) for log in question_logs if log.get("satisfaction_rating")]
-            avg_satisfaction = sum(ratings) / len(ratings) if ratings else 0
-            
-            # Escalation rate
-            escalated_count = sum(1 for log in question_logs if log.get("escalated", False))
-            escalation_rate = (escalated_count / total_questions * 100) if total_questions > 0 else 0
-            
-            with col1:
-                st.markdown(f"""
-                <div class="metric-card-gradient" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">TOTAL QUESTIONS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{total_questions:,}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col2:
-                st.markdown(f"""
-                <div class="metric-card-gradient-info" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">ACTIVE USERS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{active_users}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col3:
-                st.markdown(f"""
-                <div class="metric-card-gradient-success" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">WEEKLY ACTIVE</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{daily_active}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col4:
-                satisfaction_color = "success" if avg_satisfaction >= 4 else "warning" if avg_satisfaction >= 3 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{satisfaction_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">AVG SATISFACTION</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{avg_satisfaction:.1f}/5</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with col5:
-                escalation_color = "success" if escalation_rate < 10 else "warning" if escalation_rate < 20 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{escalation_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">ESCALATION RATE</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{escalation_rate:.1f}%</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("---")
-            
-            # Visualizations Row 1
-            viz_col1, viz_col2 = st.columns(2)
-            
-            with viz_col1:
-                # Peak Usage Hours Heatmap
-                st.markdown("### ⏰ Peak Usage Hours")
+            overview_resp = requests.get(f"{API_BASE}/admin/analytics/overview", timeout=30)
+            if overview_resp.status_code == 200:
+                overview = overview_resp.json()
                 
-                # Create hourly usage data
-                hour_counts = {}
-                for log in question_logs:
-                    hour = log.get("hour_of_day", 0)
-                    hour_counts[hour] = hour_counts.get(hour, 0) + 1
+                # Key Metrics Row
+                col1, col2, col3, col4, col5 = st.columns(5)
+                with col1:
+                    st.metric("Total Questions", f"{overview.get('total_questions', 0):,}")
+                with col2:
+                    st.metric("Active Students (30d)", overview.get('active_users_month', 0))
+                with col3:
+                    st.metric("Escalation Rate", f"{overview.get('escalation_rate', 0)}%")
+                with col4:
+                    st.metric("Accuracy Rate", f"{overview.get('accuracy_rate', 0)}%", 
+                             delta=None if overview.get('accuracy_rate', 0) >= 95 else "Low")
+                with col5:
+                    st.metric("Avg Satisfaction", f"{overview.get('avg_satisfaction', 0)}/5",
+                             delta="Good" if overview.get('avg_satisfaction', 0) >= 4 else "Needs Improvement")
                 
-                # Create heatmap data by day of week and hour
-                day_order = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-                heatmap_data = []
-                for day in day_order:
-                    day_hours = []
-                    for hour in range(24):
-                        count = sum(1 for log in question_logs 
-                                  if log.get("day_of_week") == day and log.get("hour_of_day") == hour)
-                        day_hours.append(count)
-                    heatmap_data.append(day_hours)
+                col6, col7, col8, col9 = st.columns(4)
+                with col6:
+                    st.metric("Total Students", overview.get('total_students', 0))
+                with col7:
+                    st.metric("Active (7d)", overview.get('active_users_week', 0))
+                with col8:
+                    st.metric("High Risk Students", overview.get('high_risk_students', 0))
+                with col9:
+                    st.metric("Flagged Responses", overview.get('flagged_responses', 0))
                 
-                fig_heatmap = go.Figure(data=go.Heatmap(
-                    z=heatmap_data,
-                    x=[f"{h:02d}:00" for h in range(24)],
-                    y=day_order,
-                    colorscale=[
-                        [0, '#F8FAFC'],
-                        [0.2, '#DBEAFE'],
-                        [0.4, '#93C5FD'],
-                        [0.6, '#3B82F6'],
-                        [0.8, '#1D4ED8'],
-                        [1, '#1E3A8A']
-                    ],
-                    text=heatmap_data,
-                    texttemplate='%{text}',
-                    textfont={"size": 10},
-                    hovertemplate='%{y}<br>%{x}<br>Questions: %{z}<extra></extra>'
-                ))
+                st.markdown("---")
                 
-                fig_heatmap.update_layout(
-                    height=400,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1E293B', size=11),
-                    xaxis_title="Hour of Day",
-                    yaxis_title="Day of Week",
-                    margin=dict(l=80, r=20, t=20, b=50)
-                )
+            else:
+                st.error("Failed to load overview metrics")
                 
-                st.plotly_chart(fig_heatmap, use_container_width=True)
+        except Exception as e:
+            st.error(f"Error loading overview: {e}")
+        
+        # === USAGE & ENGAGEMENT SECTION ===
+        st.markdown('<p class="section-header">📊 Usage & Engagement</p>', unsafe_allow_html=True)
+        
+        try:
+            # Get usage trends
+            trends_resp = requests.get(f"{API_BASE}/admin/analytics/usage-trends?days=30", timeout=30)
+            topics_resp = requests.get(f"{API_BASE}/admin/analytics/top-topics?limit=10", timeout=30)
+            peak_hours_resp = requests.get(f"{API_BASE}/admin/analytics/peak-hours", timeout=30)
             
-            with viz_col2:
-                # Most Frequently Asked Topics
-                st.markdown("### 📚 Top Topics")
+            if trends_resp.status_code == 200 and topics_resp.status_code == 200:
+                trends_data = trends_resp.json()
+                topics_data = topics_resp.json()
                 
-                topic_counts = {}
-                for log in question_logs:
-                    topic = log.get("topic", "Other")
-                    topic_counts[topic] = topic_counts.get(topic, 0) + 1
+                # Row 1: Usage Trends and Top Topics
+                col_left, col_right = st.columns(2)
                 
-                # Sort and get top 10
-                sorted_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-                topics, counts = zip(*sorted_topics) if sorted_topics else ([], [])
-                
-                fig_topics = go.Figure(data=[go.Bar(
-                    y=list(topics),
-                    x=list(counts),
-                    orientation='h',
-                    marker=dict(
-                        color=list(counts),
-                        colorscale=[
-                            [0, '#3B82F6'],
-                            [0.5, '#1D4ED8'],
-                            [1, '#1E3A8A']
-                        ],
-                        showscale=False
-                    ),
-                    text=list(counts),
-                    textposition='auto',
-                    hovertemplate='%{y}<br>Questions: %{x}<extra></extra>'
-                )])
-                
-                fig_topics.update_layout(
-                    height=400,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1E293B', size=11),
-                    xaxis_title="Number of Questions",
-                    yaxis_title="",
-                    xaxis=dict(gridcolor='#E5E7EB'),
-                    yaxis=dict(autorange="reversed"),
-                    margin=dict(l=150, r=20, t=20, b=50)
-                )
-                
-                st.plotly_chart(fig_topics, use_container_width=True)
-            
-            # Daily/Weekly Trend Line Chart
-            st.markdown("### 📊 Activity Trend (Last 30 Days)")
-            
-            # Group by date
-            date_counts = {}
-            for log in question_logs:
-                log_date = datetime.fromisoformat(log["timestamp"]).date()
-                if (datetime.now().date() - log_date).days <= 30:
-                    date_str = log_date.isoformat()
-                    date_counts[date_str] = date_counts.get(date_str, 0) + 1
-            
-            # Create complete date range
-            dates = []
-            counts_by_date = []
-            for i in range(30, -1, -1):
-                date = (datetime.now().date() - timedelta(days=i)).isoformat()
-                dates.append(date)
-                counts_by_date.append(date_counts.get(date, 0))
-            
-            fig_trend = go.Figure()
-            
-            fig_trend.add_trace(go.Scatter(
-                x=dates,
-                y=counts_by_date,
-                mode='lines+markers',
-                name='Questions',
-                line=dict(color='#3B82F6', width=3),
-                marker=dict(size=8, color='#1D4ED8'),
-                fill='tozeroy',
-                fillcolor='rgba(59, 130, 246, 0.1)',
-                hovertemplate='%{x}<br>Questions: %{y}<extra></extra>'
-            ))
-            
-            fig_trend.update_layout(
-                height=350,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#1E293B', size=11),
-                xaxis_title="Date",
-                yaxis_title="Number of Questions",
-                xaxis=dict(gridcolor='#E5E7EB', tickangle=-45),
-                yaxis=dict(gridcolor='#E5E7EB'),
-                margin=dict(l=60, r=20, t=20, b=100),
-                hovermode='x unified'
-            )
-            
-            st.plotly_chart(fig_trend, use_container_width=True)
-            
-            st.markdown("---")
-            
-            # ========== SECTION 2: QUALITY & ACCURACY MONITORING ==========
-            st.markdown("## ✅ Quality & Accuracy Monitoring")
-            st.markdown("---")
-            
-            qual_col1, qual_col2, qual_col3, qual_col4 = st.columns(4)
-            
-            # Calculate metrics
-            flagged_count = sum(1 for log in question_logs if log.get("flagged_incorrect", False))
-            flagged_rate = (flagged_count / total_questions * 100) if total_questions > 0 else 0
-            
-            # Average response time
-            response_times = [log.get("response_time_seconds", 0) for log in question_logs]
-            avg_response_time = sum(response_times) / len(response_times) if response_times else 0
-            
-            # Satisfaction distribution
-            satisfied_count = sum(1 for r in ratings if r >= 4)
-            satisfaction_pct = (satisfied_count / len(ratings) * 100) if ratings else 0
-            
-            with qual_col1:
-                st.markdown(f"""
-                <div class="metric-card-gradient-warning" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">ESCALATED QUESTIONS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{escalated_count}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">{escalation_rate:.1f}% of total</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with qual_col2:
-                flag_color = "success" if flagged_rate < 5 else "warning" if flagged_rate < 10 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{flag_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">FLAGGED INCORRECT</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{flagged_count}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">{flagged_rate:.1f}% rate</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with qual_col3:
-                time_color = "success" if avg_response_time < 5 else "warning" if avg_response_time < 10 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{time_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">AVG RESPONSE TIME</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{avg_response_time:.2f}s</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with qual_col4:
-                sat_color = "success" if satisfaction_pct >= 80 else "warning" if satisfaction_pct >= 60 else "danger"
-                st.markdown(f"""
-                <div class="metric-card-gradient-{sat_color}" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">SATISFACTION RATE</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{satisfaction_pct:.1f}%</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">4+ stars</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("---")
-            
-            viz_col1, viz_col2 = st.columns(2)
-            
-            with viz_col1:
-                # Satisfaction Rating Distribution
-                st.markdown("### ⭐ Satisfaction Distribution")
-                
-                rating_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-                for r in ratings:
-                    rating_counts[r] = rating_counts.get(r, 0) + 1
-                
-                fig_satisfaction = go.Figure(data=[go.Bar(
-                    x=['1 Star', '2 Stars', '3 Stars', '4 Stars', '5 Stars'],
-                    y=[rating_counts[1], rating_counts[2], rating_counts[3], 
-                       rating_counts[4], rating_counts[5]],
-                    marker=dict(
-                        color=['#EF4444', '#F59E0B', '#FACC15', '#22C55E', '#10B981']
-                    ),
-                    text=[rating_counts[1], rating_counts[2], rating_counts[3], 
-                          rating_counts[4], rating_counts[5]],
-                    textposition='auto',
-                    hovertemplate='%{x}<br>Count: %{y}<extra></extra>'
-                )])
-                
-                fig_satisfaction.update_layout(
-                    height=350,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1E293B', size=11),
-                    xaxis_title="Rating",
-                    yaxis_title="Number of Responses",
-                    xaxis=dict(gridcolor='#E5E7EB'),
-                    yaxis=dict(gridcolor='#E5E7EB'),
-                    margin=dict(l=60, r=20, t=20, b=60)
-                )
-                
-                st.plotly_chart(fig_satisfaction, use_container_width=True)
-            
-            with viz_col2:
-                # Escalation Reasons Pie Chart
-                st.markdown("### 🎯 Escalation Breakdown")
-                
-                escalation_data = {
-                    'Auto-Escalated': escalated_count,
-                    'Flagged Incorrect': flagged_count,
-                    'Not Escalated': total_questions - escalated_count - flagged_count
-                }
-                
-                fig_escalation_pie = go.Figure(data=[go.Pie(
-                    labels=list(escalation_data.keys()),
-                    values=list(escalation_data.values()),
-                    hole=0.4,
-                    marker=dict(colors=['#EF4444', '#FACC15', '#22C55E']),
-                    textinfo='label+percent',
-                    textposition='auto',
-                    hovertemplate='%{label}<br>Count: %{value}<br>%{percent}<extra></extra>'
-                )])
-                
-                fig_escalation_pie.update_layout(
-                    height=350,
-                    paper_bgcolor='rgba(0,0,0,0)',
-                    plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color='#1E293B', size=11),
-                    margin=dict(l=20, r=20, t=20, b=20),
-                    showlegend=True
-                )
-                
-                st.plotly_chart(fig_escalation_pie, use_container_width=True)
-            
-            st.markdown("---")
-            
-            # ========== SECTION 3: STUDENT BEHAVIOR INSIGHTS ==========
-            st.markdown("## 👥 Student Behavior Insights")
-            st.markdown("---")
-            
-            # Students with most questions
-            student_question_counts = {}
-            for log in question_logs:
-                sid = log["student_id"]
-                student_question_counts[sid] = student_question_counts.get(sid, 0) + 1
-            
-            # Get top 10 most active students
-            top_students = sorted(student_question_counts.items(), key=lambda x: x[1], reverse=True)[:10]
-            
-            # Repeat help seekers (students with 10+ questions)
-            repeat_students = [s for s, count in student_question_counts.items() if count >= 10]
-            
-            # Long conversations (high friction)
-            long_conversations = [log for log in question_logs if log.get("conversation_length", 0) > 5]
-            high_friction_topics = {}
-            for log in long_conversations:
-                topic = log.get("topic", "Other")
-                high_friction_topics[topic] = high_friction_topics.get(topic, 0) + 1
-            
-            behav_col1, behav_col2, behav_col3 = st.columns(3)
-            
-            with behav_col1:
-                st.markdown(f"""
-                <div class="metric-card-gradient-warning" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">REPEAT HELP SEEKERS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{len(repeat_students)}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">10+ questions</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with behav_col2:
-                st.markdown(f"""
-                <div class="metric-card-gradient-danger" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">HIGH FRICTION TOPICS</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{len(high_friction_topics)}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">long conversations</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            with behav_col3:
-                avg_conversation_length = sum(log.get("conversation_length", 0) for log in question_logs) / len(question_logs) if question_logs else 0
-                st.markdown(f"""
-                <div class="metric-card-gradient-info" style="text-align:center;">
-                    <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">AVG CONVERSATION</div>
-                    <div style="font-size:2.5rem; font-weight:700;">{avg_conversation_length:.1f}</div>
-                    <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">exchanges</div>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("---")
-            
-            viz_col1, viz_col2 = st.columns(2)
-            
-            with viz_col1:
-                # Top 10 Most Active Students
-                st.markdown("### 🔥 Most Active Students")
-                
-                if top_students:
-                    students, counts = zip(*top_students)
+                with col_left:
+                    st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
+                    st.markdown("**📈 Questions Over Time (30 Days)**")
+                    import plotly.graph_objects as go
                     
-                    fig_active_students = go.Figure(data=[go.Bar(
-                        y=list(students),
-                        x=list(counts),
-                        orientation='h',
-                        marker=dict(
-                            color=list(counts),
-                            colorscale=[
-                                [0, '#10B981'],
-                                [0.5, '#F59E0B'],
-                                [1, '#EF4444']
-                            ],
-                            showscale=False
-                        ),
-                        text=list(counts),
-                        textposition='auto',
-                        hovertemplate='%{y}<br>Questions: %{x}<extra></extra>'
-                    )])
+                    trends = trends_data.get("trends", [])
+                    dates = [t["date"] for t in trends]
+                    questions = [t["questions"] for t in trends]
+                    users = [t["active_users"] for t in trends]
                     
-                    fig_active_students.update_layout(
-                        height=400,
-                        paper_bgcolor='rgba(0,0,0,0)',
-                        plot_bgcolor='rgba(0,0,0,0)',
-                        font=dict(color='#1E293B', size=11),
-                        xaxis_title="Number of Questions",
-                        yaxis_title="Student ID",
-                        xaxis=dict(gridcolor='#E5E7EB'),
-                        yaxis=dict(autorange="reversed"),
-                        margin=dict(l=120, r=20, t=20, b=50)
+                    fig_trends = go.Figure()
+                    fig_trends.add_trace(go.Scatter(
+                        x=dates, y=questions, mode='lines+markers',
+                        name='Questions', line=dict(color='#07407b', width=3),
+                        marker=dict(size=5), fill='tozeroy', fillcolor='rgba(7,64,123,0.1)'
+                    ))
+                    fig_trends.add_trace(go.Scatter(
+                        x=dates, y=users, mode='lines+markers',
+                        name='Active Users', line=dict(color='#f7931e', width=3),
+                        marker=dict(size=5), yaxis='y2'
+                    ))
+                    
+                    fig_trends.update_layout(
+                        height=370,
+                        paper_bgcolor='rgba(255,255,255,0)',
+                        plot_bgcolor='rgba(255,255,255,0)',
+                        font=dict(color='#0b0f3b', size=11, family='Inter'),
+                        xaxis=dict(gridcolor='rgba(7,64,123,0.1)', title=""),
+                        yaxis=dict(gridcolor='rgba(7,64,123,0.1)', title="Questions", side='left'),
+                        yaxis2=dict(gridcolor='rgba(247,147,30,0.1)', title="Users", 
+                                   overlaying='y', side='right'),
+                        legend=dict(x=0.01, y=0.99, bgcolor='rgba(255,255,255,0.8)'),
+                        margin=dict(l=10, r=10, t=10, b=10),
+                        hovermode='x unified'
                     )
                     
-                    st.plotly_chart(fig_active_students, use_container_width=True)
-            
-            with viz_col2:
-                # High Friction Topics
-                st.markdown("### 🔥 High Friction Areas")
+                    st.plotly_chart(fig_trends, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
                 
-                if high_friction_topics:
-                    sorted_friction = sorted(high_friction_topics.items(), key=lambda x: x[1], reverse=True)[:8]
-                    topics_fric, counts_fric = zip(*sorted_friction)
+                with col_right:
+                    st.markdown('<div class="dashboard-card">', unsafe_allow_html=True)
+                    st.markdown("**🔝 Most Asked Topics**")
                     
-                    fig_friction = go.Figure(data=[go.Bar(
-                        y=list(topics_fric),
-                        x=list(counts_fric),
+                    top_topics = topics_data.get("top_topics", [])
+                    topics_names = [t["topic"] for t in top_topics]
+                    topics_counts = [t["count"] for t in top_topics]
+                    
+                    fig_topics = go.Figure(data=[go.Bar(
+                        y=topics_names[::-1],
+                        x=topics_counts[::-1],
                         orientation='h',
-                        marker=dict(color='#EF4444'),
-                        text=list(counts_fric),
+                        marker=dict(
+                            color=topics_counts[::-1],
+                            colorscale=[[0, '#7fcdee'], [0.5, '#07407b'], [1, '#f7931e']],
+                            showscale=False
+                        ),
+                        text=topics_counts[::-1],
                         textposition='auto',
-                        hovertemplate='%{y}<br>Long Conversations: %{x}<extra></extra>'
+                        hovertemplate='<b>%{y}</b><br>Questions: %{x}<extra></extra>'
+                    )])
+                    
+                    fig_topics.update_layout(
+                        height=370,
+                        paper_bgcolor='rgba(255,255,255,0)',
+                        plot_bgcolor='rgba(255,255,255,0)',
+                        font=dict(color='#0b0f3b', size=10, family='Inter'),
+                        xaxis=dict(gridcolor='rgba(7,64,123,0.1)', title=""),
+                        yaxis=dict(title=""),
+                        margin=dict(l=10, r=10, t=10, b=10)
+                    )
+                    
+                    st.plotly_chart(fig_topics, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Row 2: Peak Hours Heatmap
+                if peak_hours_resp.status_code == 200:
+                    st.markdown("### 🕐 Peak Usage Hours")
+                    peak_data = peak_hours_resp.json()
+                    heatmap_data = peak_data.get("heatmap_data", [])
+                    
+                    # Transform data for heatmap
+                    days_order = peak_data.get("days_order", [])
+                    hours_range = peak_data.get("hours_range", [])
+                    
+                    # Create matrix
+                    import numpy as np
+                    matrix = []
+                    for day in days_order:
+                        day_data = [d["count"] for d in heatmap_data if d["day"] == day]
+                        matrix.append(day_data)
+                    
+                    fig_heatmap = go.Figure(data=go.Heatmap(
+                        z=matrix,
+                        x=[f"{h}:00" for h in hours_range],
+                        y=days_order,
+                        colorscale=[[0, '#1e293b'], [0.5, '#3b82f6'], [1, '#5eead4']],
+                        hovertemplate='%{y}<br>Hour: %{x}<br>Questions: %{z}<extra></extra>'
+                    ))
+                    
+                    fig_heatmap.update_layout(
+                        height=350,
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color='#e2e8f0', size=10),
+                        xaxis=dict(title="Hour of Day", side='bottom'),
+                        yaxis=dict(title="Day of Week"),
+                        margin=dict(l=20, r=20, t=20, b=20)
+                    )
+                    
+                    st.plotly_chart(fig_heatmap, use_container_width=True)
+                    
+                    # Insights
+                    st.info("💡 **Insight**: Use this heatmap to identify peak hours and allocate advisor resources accordingly.")
+                
+        except Exception as e:
+            st.error(f"Error loading usage & engagement data: {e}")
+        
+        st.markdown("---")
+        
+        # === QUALITY & ACCURACY MONITORING ===
+        st.markdown('<p class="section-header">✅ Quality & Accuracy</p>', unsafe_allow_html=True)
+        
+        try:
+            accuracy_resp = requests.get(f"{API_BASE}/admin/analytics/accuracy-monitoring", timeout=30)
+            satisfaction_resp = requests.get(f"{API_BASE}/admin/analytics/satisfaction-trends", timeout=30)
+            
+            if accuracy_resp.status_code == 200 and satisfaction_resp.status_code == 200:
+                accuracy_data = accuracy_resp.json()
+                satisfaction_data = satisfaction_resp.json()
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("### 🎯 Accuracy Over Time")
+                    
+                    accuracy_trend = accuracy_data.get("accuracy_trend", [])
+                    weeks = [t["week"] for t in accuracy_trend]
+                    accuracy = [t["accuracy"] for t in accuracy_trend]
+                    
+                    fig_accuracy = go.Figure()
+                    fig_accuracy.add_trace(go.Scatter(
+                        x=weeks, y=accuracy, mode='lines+markers',
+                        name='Accuracy Rate', line=dict(color='#10b981', width=3),
+                        marker=dict(size=8), fill='tozeroy',
+                        fillcolor='rgba(16, 185, 129, 0.2)'
+                    ))
+                    fig_accuracy.add_hline(y=95, line_dash="dash", line_color="yellow", 
+                                          annotation_text="Target: 95%")
+                    
+                    fig_accuracy.update_layout(
+                        height=350,
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color='#e2e8f0', size=12),
+                        xaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Week"),
+                        yaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Accuracy %", range=[85, 100]),
+                        margin=dict(l=20, r=20, t=20, b=20),
+                        showlegend=False
+                    )
+                    
+                    st.plotly_chart(fig_accuracy, use_container_width=True)
+                    
+                    st.metric("Overall Accuracy", f"{accuracy_data.get('overall_accuracy', 0)}%")
+                
+                with col2:
+                    st.markdown("### ⭐ Satisfaction Rating Distribution")
+                    
+                    rating_dist = satisfaction_data.get("rating_distribution", [])
+                    ratings = [r["rating"] for r in rating_dist]
+                    counts = [r["count"] for r in rating_dist]
+                    
+                    fig_satisfaction = go.Figure(data=[go.Bar(
+                        x=[f"{r} ⭐" for r in ratings],
+                        y=counts,
+                        marker=dict(
+                            color=counts,
+                            colorscale=[[0, '#ef4444'], [0.5, '#f59e0b'], [1, '#10b981']],
+                            showscale=False
+                        ),
+                        text=counts,
+                        textposition='auto',
+                        hovertemplate='Rating: %{x}<br>Count: %{y}<extra></extra>'
+                    )])
+                    
+                    fig_satisfaction.update_layout(
+                        height=350,
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color='#e2e8f0', size=12),
+                        xaxis=dict(title="Rating"),
+                        yaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Number of Responses"),
+                        margin=dict(l=20, r=20, t=20, b=20)
+                    )
+                    
+                    st.plotly_chart(fig_satisfaction, use_container_width=True)
+                    
+                    st.metric("Average Satisfaction", f"{satisfaction_data.get('overall_avg', 0)}/5")
+                
+                # Common Issues
+                st.markdown("### ⚠️ Common Flagged Issues")
+                common_issues = accuracy_data.get("common_issues", [])
+                
+                if common_issues:
+                    col1, col2 = st.columns([2, 1])
+                    with col1:
+                        issue_names = [i["issue"] for i in common_issues[:7]]
+                        issue_counts = [i["count"] for i in common_issues[:7]]
+                        
+                        fig_issues = go.Figure(data=[go.Bar(
+                            y=issue_names[::-1],
+                            x=issue_counts[::-1],
+                            orientation='h',
+                            marker=dict(color='#ef4444'),
+                            text=issue_counts[::-1],
+                            textposition='auto'
+                        )])
+                        
+                        fig_issues.update_layout(
+                            height=300,
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#e2e8f0', size=11),
+                            xaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Occurrences"),
+                            yaxis=dict(title=""),
+                            margin=dict(l=20, r=20, t=20, b=20)
+                        )
+                        
+                        st.plotly_chart(fig_issues, use_container_width=True)
+                    
+                    with col2:
+                        st.markdown("#### 📋 Action Items")
+                        st.markdown("- Review flagged topics for knowledge base gaps")
+                        st.markdown("- Update outdated policy documents")
+                        st.markdown("- Improve AI prompts for clarity")
+                        st.markdown("- Train on edge cases")
+                
+        except Exception as e:
+            st.error(f"Error loading quality & accuracy data: {e}")
+        
+        st.markdown("---")
+        
+        # === STUDENT BEHAVIOR INSIGHTS ===
+        st.markdown('<p class="section-header">👥 Student Behavior</p>', unsafe_allow_html=True)
+        
+        try:
+            behavior_resp = requests.get(f"{API_BASE}/admin/analytics/student-behavior", timeout=30)
+            
+            if behavior_resp.status_code == 200:
+                behavior_data = behavior_resp.json()
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("### 🔄 Students Repeatedly Seeking Help")
+                    
+                    repeat_students = behavior_data.get("repeat_help_seekers", [])
+                    
+                    if repeat_students:
+                        for student in repeat_students[:10]:
+                            risk_colors = {
+                                "low": "🟢",
+                                "medium": "🟡",
+                                "high": "🟠",
+                                "critical": "🔴"
+                            }
+                            risk_icon = risk_colors.get(student.get("risk_level", "low"), "⚪")
+                            
+                            st.markdown(f"""
+                            <div style="background:rgba(30,41,59,0.9); padding:0.8rem; border-radius:8px; margin:0.5rem 0; border-left:4px solid #5eead4;">
+                                <strong>{risk_icon} {student.get('name', 'Unknown')}</strong> ({student.get('student_id', 'N/A')})<br>
+                                <span style="color:#94a3b8;">Questions: {student.get('question_count', 0)} | Risk: {student.get('risk_level', 'low').upper()}</span>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    else:
+                        st.info("No repeat help-seekers identified")
+                
+                with col2:
+                    st.markdown("### 🤔 High Confusion Areas")
+                    
+                    confusion_areas = behavior_data.get("confusion_areas", [])
+                    
+                    if confusion_areas:
+                        topics = [c["topic"] for c in confusion_areas[:8]]
+                        scores = [c["confusion_score"] for c in confusion_areas[:8]]
+                        
+                        fig_confusion = go.Figure(data=[go.Bar(
+                            y=topics[::-1],
+                            x=scores[::-1],
+                            orientation='h',
+                            marker=dict(
+                                color=scores[::-1],
+                                colorscale=[[0, '#f59e0b'], [1, '#ef4444']],
+                                showscale=False
+                            ),
+                            text=[f"{s:.1f}" for s in scores[::-1]],
+                            textposition='auto',
+                            hovertemplate='<b>%{y}</b><br>Confusion Score: %{x:.2f}<extra></extra>'
+                        )])
+                        
+                        fig_confusion.update_layout(
+                            height=350,
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#e2e8f0', size=11),
+                            xaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Confusion Score"),
+                            yaxis=dict(title=""),
+                            margin=dict(l=20, r=20, t=20, b=20)
+                        )
+                        
+                        st.plotly_chart(fig_confusion, use_container_width=True)
+                        
+                        st.caption("💡 Confusion Score = (5 - Avg Rating) × Avg Conversation Length")
+                
+                # High Friction Topics
+                st.markdown("### 🔥 High Friction Topics (Long Conversations)")
+                
+                high_friction = behavior_data.get("high_friction_topics", [])
+                
+                if high_friction:
+                    friction_topics = [t["topic"] for t in high_friction[:10]]
+                    friction_lengths = [t["avg_conversation_length"] for t in high_friction[:10]]
+                    
+                    fig_friction = go.Figure(data=[go.Scatter(
+                        x=friction_topics,
+                        y=friction_lengths,
+                        mode='markers',
+                        marker=dict(
+                            size=[t["question_count"] for t in high_friction[:10]],
+                            sizemode='area',
+                            sizeref=2.*max([t["question_count"] for t in high_friction[:10]])/(40.**2),
+                            sizemin=4,
+                            color=friction_lengths,
+                            colorscale=[[0, '#3b82f6'], [1, '#ef4444']],
+                            showscale=True,
+                            colorbar=dict(title="Avg Length")
+                        ),
+                        text=friction_topics,
+                        hovertemplate='<b>%{text}</b><br>Avg Conversation: %{y:.1f} exchanges<extra></extra>'
                     )])
                     
                     fig_friction.update_layout(
-                        height=400,
+                        height=350,
                         paper_bgcolor='rgba(0,0,0,0)',
                         plot_bgcolor='rgba(0,0,0,0)',
-                        font=dict(color='#1E293B', size=11),
-                        xaxis_title="Long Conversations (5+ exchanges)",
-                        yaxis_title="",
-                        xaxis=dict(gridcolor='#E5E7EB'),
-                        yaxis=dict(autorange="reversed"),
-                        margin=dict(l=150, r=20, t=20, b=60)
+                        font=dict(color='#e2e8f0', size=11),
+                        xaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Topic", tickangle=-45),
+                        yaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Avg Conversation Length"),
+                        margin=dict(l=20, r=20, t=20, b=80)
                     )
                     
                     st.plotly_chart(fig_friction, use_container_width=True)
+                    
+                    st.info("💡 **Insight**: Topics with longer conversations may need clearer documentation or additional training data.")
+                
+        except Exception as e:
+            st.error(f"Error loading student behavior data: {e}")
+        
+        st.markdown("---")
+        
+        # === ESCALATION ANALYSIS ===
+        st.markdown('<p class="section-header">🚨 Escalation Analysis</p>', unsafe_allow_html=True)
+        
+        try:
+            escalation_resp = requests.get(f"{API_BASE}/admin/analytics/escalation-analysis", timeout=30)
             
-            st.markdown("---")
-            
-            # ========== SECTION 4: RISK IDENTIFICATION ==========
-            st.markdown("## ⚠️ Risk Identification & Patterns")
-            st.markdown("---")
-            
-            # Load student profiles for risk analysis
-            try:
-                students_resp = requests.get(f"{API_BASE}/advisor/students", timeout=10)
-                if students_resp.status_code == 200:
-                    all_students = students_resp.json()
+            if escalation_resp.status_code == 200:
+                escalation_data = escalation_resp.json()
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("### 📊 Escalations by Topic")
                     
-                    # Risk level distribution
-                    risk_distribution = {'low': 0, 'medium': 0, 'high': 0, 'critical': 0}
-                    for student in all_students:
-                        risk = student.get('risk_level', 'low')
-                        risk_distribution[risk] = risk_distribution.get(risk, 0) + 1
+                    esc_by_topic = escalation_data.get("escalation_by_topic", [])
                     
-                    # Students at risk
-                    at_risk_students = [s for s in all_students if s.get('risk_level') in ['high', 'critical']]
-                    
-                    risk_col1, risk_col2, risk_col3, risk_col4 = st.columns(4)
-                    
-                    with risk_col1:
-                        st.markdown(f"""
-                        <div class="metric-card-gradient-success" style="text-align:center;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">LOW RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['low']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">performing well</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    with risk_col2:
-                        st.markdown(f"""
-                        <div class="metric-card-gradient-warning" style="text-align:center;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">MEDIUM RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['medium']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">needs monitoring</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    with risk_col3:
-                        st.markdown(f"""
-                        <div class="metric-card-gradient-danger" style="text-align:center;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">HIGH RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['high']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">⚠️ needs attention</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    with risk_col4:
-                        st.markdown(f"""
-                        <div style="background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); 
-                                     padding: 1.5rem; border-radius: 16px; text-align:center;
-                                     box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4); color: #FFFFFF;
-                                     transition: all 0.3s ease;">
-                            <div style="font-size:0.875rem; font-weight:600; opacity:0.9; margin-bottom:0.5rem;">CRITICAL RISK</div>
-                            <div style="font-size:2.5rem; font-weight:700;">{risk_distribution['critical']}</div>
-                            <div style="font-size:0.75rem; opacity:0.8; margin-top:0.5rem;">🚨 urgent</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    st.markdown("---")
-                    
-                    viz_col1, viz_col2 = st.columns(2)
-                    
-                    with viz_col1:
-                        # Risk Level Pie Chart
-                        st.markdown("### 📊 Risk Level Distribution")
+                    if esc_by_topic:
+                        topics = [e["topic"] for e in esc_by_topic]
+                        counts = [e["count"] for e in esc_by_topic]
                         
-                        fig_risk_pie = go.Figure(data=[go.Pie(
-                            labels=['Low', 'Medium', 'High', 'Critical'],
-                            values=[risk_distribution['low'], risk_distribution['medium'],
-                                   risk_distribution['high'], risk_distribution['critical']],
+                        fig_esc_topics = go.Figure(data=[go.Pie(
+                            labels=topics,
+                            values=counts,
                             hole=0.4,
-                            marker=dict(colors=['#22C55E', '#FACC15', '#EF4444', '#DC2626']),
-                            textinfo='label+value',
+                            marker=dict(colors=['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899']),
+                            textinfo='label+percent',
                             textposition='auto',
-                            hovertemplate='%{label} Risk<br>Students: %{value}<br>%{percent}<extra></extra>'
+                            hovertemplate='<b>%{label}</b><br>Count: %{value}<br>Percentage: %{percent}<extra></extra>'
                         )])
                         
-                        fig_risk_pie.update_layout(
-                            height=400,
+                        fig_esc_topics.update_layout(
+                            height=350,
                             paper_bgcolor='rgba(0,0,0,0)',
                             plot_bgcolor='rgba(0,0,0,0)',
-                            font=dict(color='#1E293B', size=11),
-                            margin=dict(l=20, r=20, t=20, b=20),
-                            showlegend=True
+                            font=dict(color='#e2e8f0', size=11),
+                            showlegend=True,
+                            legend=dict(orientation="v", yanchor="middle", y=0.5),
+                            margin=dict(l=20, r=20, t=20, b=20)
                         )
                         
-                        st.plotly_chart(fig_risk_pie, use_container_width=True)
-                    
-                    with viz_col2:
-                        # At-Risk Students Scatter Plot (GPA vs Escalations)
-                        st.markdown("### 🎯 Student Risk Analysis")
-                        
-                        if at_risk_students:
-                            gpas = [s.get('gpa', 0) for s in at_risk_students]
-                            escalations = [s.get('total_escalations', 0) for s in at_risk_students]
-                            names = [s.get('name', s.get('student_id', '')) for s in at_risk_students]
-                            risk_levels = [s.get('risk_level', 'medium') for s in at_risk_students]
-                            
-                            # Color map
-                            color_map = {'medium': '#FACC15', 'high': '#EF4444', 'critical': '#DC2626'}
-                            colors = [color_map.get(r, '#94A3B8') for r in risk_levels]
-                            
-                            fig_scatter = go.Figure(data=[go.Scatter(
-                                x=gpas,
-                                y=escalations,
-                                mode='markers',
-                                marker=dict(
-                                    size=12,
-                                    color=colors,
-                                    line=dict(width=2, color='#FFFFFF')
-                                ),
-                                text=names,
-                                hovertemplate='%{text}<br>GPA: %{x:.2f}<br>Escalations: %{y}<extra></extra>'
-                            )])
-                            
-                            fig_scatter.update_layout(
-                                height=400,
-                                paper_bgcolor='rgba(0,0,0,0)',
-                                plot_bgcolor='rgba(0,0,0,0)',
-                                font=dict(color='#1E293B', size=11),
-                                xaxis_title="GPA",
-                                yaxis_title="Total Escalations",
-                                xaxis=dict(gridcolor='#E5E7EB'),
-                                yaxis=dict(gridcolor='#E5E7EB'),
-                                margin=dict(l=60, r=20, t=20, b=60)
-                            )
-                            
-                            st.plotly_chart(fig_scatter, use_container_width=True)
-                        else:
-                            st.info("No at-risk students identified")
-                    
-                    # At-Risk Students Table
-                    if at_risk_students:
-                        st.markdown("### 🚨 Students Requiring Immediate Attention")
-                        
-                        for student in at_risk_students[:10]:
-                            risk_level = student.get('risk_level', 'medium')
-                            risk_class = f"risk-{risk_level}"
-                            risk_emoji = {'medium': '⚠️', 'high': '🔴', 'critical': '🚨'}.get(risk_level, '⚠️')
-                            
-                            with st.expander(
-                                f"{risk_emoji} {student.get('name', 'Unknown')} ({student.get('student_id', 'N/A')}) - "
-                                f"GPA: {student.get('gpa', 0):.2f} - Risk: {risk_level.upper()}",
-                                expanded=False
-                            ):
-                                col_a, col_b = st.columns(2)
-                                
-                                with col_a:
-                                    st.markdown(f"**Student ID:** {student.get('student_id', 'N/A')}")
-                                    st.markdown(f"**Name:** {student.get('name', 'Unknown')}")
-                                    st.markdown(f"**Major:** {student.get('major', 'Undeclared')}")
-                                    st.markdown(f"**GPA:** {student.get('gpa', 0):.2f}")
-                                    st.markdown(f"**Risk Level:** <span class='{risk_class}'>{risk_level.upper()}</span>", 
-                                              unsafe_allow_html=True)
-                                
-                                with col_b:
-                                    st.markdown(f"**Total Escalations:** {student.get('total_escalations', 0)}")
-                                    st.markdown(f"**Questions Asked:** {student_question_counts.get(student.get('student_id'), 0)}")
-                                    st.markdown(f"**Last Interaction:** {student.get('last_interaction', 'N/A')[:10]}")
-                                    
-                                    if st.button(f"View Profile", key=f"view_profile_{student.get('student_id')}"):
-                                        st.info(f"Viewing full profile for {student.get('student_id')}")
+                        st.plotly_chart(fig_esc_topics, use_container_width=True)
                 
-            except Exception as e:
-                st.error(f"Could not load student risk data: {e}")
-            
-            st.markdown("---")
-            
-            # ========== SECTION 5: SYSTEM PERFORMANCE ==========
-            st.markdown("## ⚡ System Performance Metrics")
-            st.markdown("---")
-            
-            perf_col1, perf_col2, perf_col3, perf_col4 = st.columns(4)
-            
-            # Response time distribution
-            fast_responses = sum(1 for t in response_times if t < 3)
-            medium_responses = sum(1 for t in response_times if 3 <= t < 10)
-            slow_responses = sum(1 for t in response_times if t >= 10)
-            
-            with perf_col1:
-                st.metric(
-                    "Fast Responses (<3s)",
-                    f"{fast_responses}",
-                    delta=f"{(fast_responses/len(response_times)*100):.1f}%" if response_times else "0%",
-                    help="Responses generated in under 3 seconds"
-                )
-            
-            with perf_col2:
-                st.metric(
-                    "Medium (3-10s)",
-                    f"{medium_responses}",
-                    delta=f"{(medium_responses/len(response_times)*100):.1f}%" if response_times else "0%",
-                    help="Responses taking 3-10 seconds"
-                )
-            
-            with perf_col3:
-                st.metric(
-                    "Slow (>10s)",
-                    f"{slow_responses}",
-                    delta=f"{(slow_responses/len(response_times)*100):.1f}%" if response_times else "0%",
-                    delta_color="inverse",
-                    help="Responses taking over 10 seconds"
-                )
-            
-            with perf_col4:
-                st.metric(
-                    "Median Response Time",
-                    f"{sorted(response_times)[len(response_times)//2]:.2f}s" if response_times else "0s",
-                    help="Median system response time"
-                )
-            
-            # Response Time Distribution Chart
-            st.markdown("### 📈 Response Time Distribution")
-            
-            fig_response_time = go.Figure(data=[go.Histogram(
-                x=response_times,
-                nbinsx=30,
-                marker=dict(
-                    color='#3B82F6',
-                    line=dict(color='#1D4ED8', width=1)
-                ),
-                hovertemplate='Response Time: %{x:.2f}s<br>Count: %{y}<extra></extra>'
-            )])
-            
-            fig_response_time.update_layout(
-                height=300,
-                paper_bgcolor='rgba(0,0,0,0)',
-                plot_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#1E293B', size=11),
-                xaxis_title="Response Time (seconds)",
-                yaxis_title="Frequency",
-                xaxis=dict(gridcolor='#E5E7EB'),
-                yaxis=dict(gridcolor='#E5E7EB'),
-                margin=dict(l=60, r=20, t=20, b=60),
-                bargap=0.1
-            )
-            
-            st.plotly_chart(fig_response_time, use_container_width=True)
-            
-        except FileNotFoundError:
-            st.error("📁 Analytics data file not found. Please ensure the backend has generated analytics data.")
+                with col2:
+                    st.markdown("### 🔍 Escalation Reasons")
+                    
+                    esc_reasons = escalation_data.get("escalation_reasons", [])
+                    
+                    if esc_reasons:
+                        # Simplify reason text for display
+                        reasons = [r["reason"].split(":")[1].strip() if ":" in r["reason"] else r["reason"] for r in esc_reasons[:8]]
+                        counts = [r["count"] for r in esc_reasons[:8]]
+                        
+                        fig_reasons = go.Figure(data=[go.Bar(
+                            x=counts,
+                            y=reasons[::-1],
+                            orientation='h',
+                            marker=dict(color='#f59e0b'),
+                            text=counts[::-1],
+                            textposition='auto'
+                        )])
+                        
+                        fig_reasons.update_layout(
+                            height=350,
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#e2e8f0', size=10),
+                            xaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Count"),
+                            yaxis=dict(title=""),
+                            margin=dict(l=20, r=20, t=20, b=20)
+                        )
+                        
+                        st.plotly_chart(fig_reasons, use_container_width=True)
+                
+                # Escalation Rate Trend
+                st.markdown("### 📈 Escalation Rate Trend")
+                
+                esc_trend = escalation_data.get("escalation_rate_trend", [])
+                
+                if esc_trend:
+                    weeks = [t["week"] for t in esc_trend]
+                    rates = [t["rate"] for t in esc_trend]
+                    
+                    fig_esc_trend = go.Figure()
+                    fig_esc_trend.add_trace(go.Scatter(
+                        x=weeks, y=rates, mode='lines+markers',
+                        name='Escalation Rate', line=dict(color='#f59e0b', width=3),
+                        marker=dict(size=8), fill='tozeroy',
+                        fillcolor='rgba(245, 158, 11, 0.2)',
+                        hovertemplate='Week: %{x}<br>Rate: %{y:.2f}%<extra></extra>'
+                    ))
+                    fig_esc_trend.add_hline(y=10, line_dash="dash", line_color="red", 
+                                           annotation_text="Target: < 10%")
+                    
+                    fig_esc_trend.update_layout(
+                        height=300,
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color='#e2e8f0', size=12),
+                        xaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Week"),
+                        yaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Escalation Rate %"),
+                        margin=dict(l=20, r=20, t=20, b=20),
+                        showlegend=False
+                    )
+                    
+                    st.plotly_chart(fig_esc_trend, use_container_width=True)
+                
         except Exception as e:
-            st.error(f"❌ Error loading analytics data: {e}")
+            st.error(f"Error loading escalation analysis: {e}")
+        
+        st.markdown("---")
+        
+        # === RISK IDENTIFICATION ===
+        st.markdown('<p class="section-header">⚠️ Risk Identification</p>', unsafe_allow_html=True)
+        
+        try:
+            risk_resp = requests.get(f"{API_BASE}/admin/analytics/risk-identification", timeout=30)
+            
+            if risk_resp.status_code == 200:
+                risk_data = risk_resp.json()
+                
+                col1, col2 = st.columns([1, 2])
+                
+                with col1:
+                    st.markdown("### 📊 Risk Level Distribution")
+                    
+                    risk_dist = risk_data.get("risk_distribution", [])
+                    levels = [r["level"].capitalize() for r in risk_dist]
+                    counts = [r["count"] for r in risk_dist]
+                    
+                    colors_map = {
+                        "Low": "#10b981",
+                        "Medium": "#f59e0b",
+                        "High": "#ef4444",
+                        "Critical": "#dc2626"
+                    }
+                    colors = [colors_map.get(l, "#64748b") for l in levels]
+                    
+                    fig_risk_dist = go.Figure(data=[go.Pie(
+                        labels=levels,
+                        values=counts,
+                        hole=0.5,
+                        marker=dict(colors=colors),
+                        textinfo='label+value',
+                        textposition='auto',
+                        hovertemplate='<b>%{label}</b><br>Students: %{value}<br>Percentage: %{percent}<extra></extra>'
+                    )])
+                    
+                    fig_risk_dist.update_layout(
+                        height=350,
+                        paper_bgcolor='rgba(0,0,0,0)',
+                        plot_bgcolor='rgba(0,0,0,0)',
+                        font=dict(color='#e2e8f0', size=12),
+                        showlegend=True,
+                        margin=dict(l=20, r=20, t=20, b=20)
+                    )
+                    
+                    st.plotly_chart(fig_risk_dist, use_container_width=True)
+                
+                with col2:
+                    st.markdown("### 🎓 Risk Patterns by Major")
+                    
+                    major_patterns = risk_data.get("major_risk_patterns", [])
+                    
+                    if major_patterns:
+                        majors = [m["major"] for m in major_patterns[:8]]
+                        low = [m["risk_breakdown"]["low"] for m in major_patterns[:8]]
+                        medium = [m["risk_breakdown"]["medium"] for m in major_patterns[:8]]
+                        high = [m["risk_breakdown"]["high"] for m in major_patterns[:8]]
+                        critical = [m["risk_breakdown"]["critical"] for m in major_patterns[:8]]
+                        
+                        fig_major_risk = go.Figure()
+                        fig_major_risk.add_trace(go.Bar(name='Low', x=majors, y=low, marker_color='#10b981'))
+                        fig_major_risk.add_trace(go.Bar(name='Medium', x=majors, y=medium, marker_color='#f59e0b'))
+                        fig_major_risk.add_trace(go.Bar(name='High', x=majors, y=high, marker_color='#ef4444'))
+                        fig_major_risk.add_trace(go.Bar(name='Critical', x=majors, y=critical, marker_color='#dc2626'))
+                        
+                        fig_major_risk.update_layout(
+                            barmode='stack',
+                            height=350,
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            font=dict(color='#e2e8f0', size=11),
+                            xaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Major", tickangle=-45),
+                            yaxis=dict(gridcolor='rgba(94,234,212,0.1)', title="Number of Students"),
+                            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                            margin=dict(l=20, r=20, t=60, b=80)
+                        )
+                        
+                        st.plotly_chart(fig_major_risk, use_container_width=True)
+                
+                # At-Risk Students Table
+                st.markdown("### 🚨 At-Risk Students Requiring Immediate Attention")
+                
+                at_risk_students = risk_data.get("at_risk_students", [])
+                
+                if at_risk_students:
+                    for student in at_risk_students[:15]:
+                        risk_level = student.get("risk_level", "low")
+                        risk_colors_emoji = {
+                            "critical": ("🔴", "#dc2626"),
+                            "high": ("🟠", "#ef4444"),
+                            "medium": ("🟡", "#f59e0b"),
+                            "low": ("🟢", "#10b981")
+                        }
+                        emoji, color = risk_colors_emoji.get(risk_level, ("⚪", "#64748b"))
+                        
+                        with st.expander(
+                            f"{emoji} {student.get('name', 'Unknown')} - {risk_level.upper()} Risk | "
+                            f"GPA: {student.get('gpa', 'N/A')} | Escalations: {student.get('total_escalations', 0)}",
+                            expanded=(risk_level == "critical")
+                        ):
+                            col_a, col_b, col_c = st.columns(3)
+                            with col_a:
+                                st.markdown(f"**Student ID:** {student.get('student_id', 'N/A')}")
+                                st.markdown(f"**Major:** {student.get('major', 'Undeclared')}")
+                            with col_b:
+                                st.markdown(f"**GPA:** {student.get('gpa', 'N/A')}")
+                                st.markdown(f"**Total Questions:** {student.get('total_questions', 0)}")
+                            with col_c:
+                                st.markdown(f"**Total Escalations:** {student.get('total_escalations', 0)}")
+                                st.markdown(f"**Top Concern:** {student.get('top_concern', 'None')}")
+                            
+                            st.markdown(f"**Last Interaction:** {student.get('last_interaction', 'N/A')}")
+                            
+                            if student.get("risk_level") in ["high", "critical"]:
+                                st.warning(f"⚠️ **Action Required**: Immediate advisor outreach recommended")
+                else:
+                    st.success("✅ No students currently at high risk!")
+                
+        except Exception as e:
+            st.error(f"Error loading risk identification data: {e}")
+        
+        st.markdown("---")
+        
+        # === DATA MANAGEMENT ===
+        st.markdown('<p class="section-header">🔧 Data Management</p>', unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🔄 Regenerate Analytics Data", type="secondary", use_container_width=True):
+                with st.spinner("Regenerating analytics data..."):
+                    try:
+                        regen_resp = requests.post(f"{API_BASE}/admin/analytics/regenerate-data", timeout=30)
+                        if regen_resp.status_code == 200:
+                            st.success("✅ Analytics data regenerated successfully!")
+                            time.sleep(1)
+                            st.rerun()
+                        else:
+                            st.error("Failed to regenerate data")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+        
+        with col2:
+            st.download_button(
+                label="📥 Export Analytics Report",
+                data="Analytics report export feature coming soon...",
+                file_name=f"analytics_report_{datetime.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+        
+        with col3:
+            if st.button("📊 Refresh Dashboard", type="primary", use_container_width=True):
+                st.rerun()
 
 # === Footer ===
 st.markdown("""<div class="footer">

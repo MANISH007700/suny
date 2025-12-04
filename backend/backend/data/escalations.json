@@ -468,5 +468,55 @@
     "advisor_notes": [],
     "assigned_to": null,
     "priority": 2
+  },
+  {
+    "id": "f2bffb6b-1196-49b9-a7e5-1600fc5aaa7c",
+    "student_id": "STUDENT_001",
+    "question": "how does K Q V works in transformers ? ",
+    "ai_response": "I don't have that information in the available documents.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "how does K Q V works in transformers ? ",
+        "timestamp": "2025-12-04T16:51:56.010316"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents.",
+        "timestamp": "2025-12-04T16:51:56.010316"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI response indicates a lack of information and no relevant documents were found, suggesting it cannot adequately address the student's question.",
+    "created_at": "2025-12-04T16:51:56.010316",
+    "updated_at": "2025-12-04T16:51:56.010316",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "48cadcc9-5a1b-4f44-8337-c343096eb3c3",
+    "student_id": "STUDENT_001",
+    "question": "how does K Q V works in transformers ? ",
+    "ai_response": "I don't have that information in the available documents.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "how does K Q V works in transformers ? ",
+        "timestamp": "2025-12-04T16:52:17.560904"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents.",
+        "timestamp": "2025-12-04T16:52:17.560918"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI answer was unclear or insufficient",
+    "created_at": "2025-12-04T16:52:17.563199",
+    "updated_at": "2025-12-04T16:52:17.563199",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 3
   }
 ]
