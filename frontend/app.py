@@ -1317,7 +1317,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 ))
                 
                 fig_heatmap.update_layout(
-                    height=400,
+                    height=380,
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color='#1E293B', size=11),
@@ -1360,7 +1360,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 )])
                 
                 fig_topics.update_layout(
-                    height=400,
+                    height=380,
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color='#1E293B', size=11),
@@ -1407,7 +1407,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
             ))
             
             fig_trend.update_layout(
-                height=350,
+                height=320,
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='#1E293B', size=11),
@@ -1499,7 +1499,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 )])
                 
                 fig_satisfaction.update_layout(
-                    height=350,
+                    height=380,
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color='#1E293B', size=11),
@@ -1533,7 +1533,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 )])
                 
                 fig_escalation_pie.update_layout(
-                    height=350,
+                    height=380,
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
                     font=dict(color='#1E293B', size=11),
@@ -1568,7 +1568,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 topic = log.get("topic", "Other")
                 high_friction_topics[topic] = high_friction_topics.get(topic, 0) + 1
             
-            behav_col1, behav_col2, behav_col3 = st.columns(3)
+            behav_col1, behav_col2, behav_col3, behav_col4 = st.columns(4)
             
             with behav_col1:
                 st.metric(
@@ -1590,6 +1590,14 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                     "Avg Conversation Length",
                     f"{avg_conversation_length:.1f}",
                     help="Average number of message exchanges per question"
+                )
+            
+            with behav_col4:
+                avg_questions_per_student = total_questions / active_users if active_users > 0 else 0
+                st.metric(
+                    "Avg Questions/Student",
+                    f"{avg_questions_per_student:.1f}",
+                    help="Average number of questions per active student"
                 )
             
             st.markdown("---")
@@ -1622,7 +1630,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                     )])
                     
                     fig_active_students.update_layout(
-                        height=400,
+                        height=380,
                         paper_bgcolor='rgba(0,0,0,0)',
                         plot_bgcolor='rgba(0,0,0,0)',
                         font=dict(color='#1E293B', size=11),
@@ -1654,7 +1662,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                     )])
                     
                     fig_friction.update_layout(
-                        height=400,
+                        height=380,
                         paper_bgcolor='rgba(0,0,0,0)',
                         plot_bgcolor='rgba(0,0,0,0)',
                         font=dict(color='#1E293B', size=11),
@@ -1742,7 +1750,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                         )])
                         
                         fig_risk_pie.update_layout(
-                            height=400,
+                            height=380,
                             paper_bgcolor='rgba(0,0,0,0)',
                             plot_bgcolor='rgba(0,0,0,0)',
                             font=dict(color='#1E293B', size=11),
@@ -1780,7 +1788,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                             )])
                             
                             fig_scatter.update_layout(
-                                height=400,
+                                height=380,
                                 paper_bgcolor='rgba(0,0,0,0)',
                                 plot_bgcolor='rgba(0,0,0,0)',
                                 font=dict(color='#1E293B', size=11),
@@ -1889,7 +1897,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
             )])
             
             fig_response_time.update_layout(
-                height=300,
+                height=320,
                 paper_bgcolor='rgba(0,0,0,0)',
                 plot_bgcolor='rgba(0,0,0,0)',
                 font=dict(color='#1E293B', size=11),
@@ -2105,7 +2113,7 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                     total_size = sum(doc.get('size_kb', 0) for doc in processed_docs if isinstance(doc, dict))
                     total_chunks = sum(doc.get('chunk_count', 0) for doc in processed_docs if isinstance(doc, dict))
                     
-                    metric_col1, metric_col2, metric_col3 = st.columns(3)
+                    metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
                     
                     with metric_col1:
                         st.metric("Total Documents", doc_count)
@@ -2115,6 +2123,10 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                     
                     with metric_col3:
                         st.metric("Total Chunks", total_chunks if total_chunks > 0 else "N/A")
+                    
+                    with metric_col4:
+                        active_docs = sum(1 for doc in processed_docs if isinstance(doc, dict) and doc.get('status') == 'active')
+                        st.metric("Active Documents", active_docs)
                     
                     st.markdown("---")
                     

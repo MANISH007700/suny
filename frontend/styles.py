@@ -238,6 +238,10 @@ def get_main_styles():
         border-radius: 16px;
         border: 1px solid #E5E7EB;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     
     [data-testid="stMetricLabel"] {
@@ -260,6 +264,10 @@ def get_main_styles():
         box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
         color: #FFFFFF;
         transition: all 0.3s ease;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     
     .metric-card-gradient:hover {
@@ -269,22 +277,74 @@ def get_main_styles():
     
     .metric-card-gradient-warning {
         background: linear-gradient(135deg, #FACC15 0%, #F59E0B 100%);
+        padding: 1.5rem;
+        border-radius: 16px;
         box-shadow: 0 4px 16px rgba(250, 204, 21, 0.3);
+        color: #FFFFFF;
+        transition: all 0.3s ease;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .metric-card-gradient-warning:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(250, 204, 21, 0.4);
     }
     
     .metric-card-gradient-success {
         background: linear-gradient(135deg, #22C55E 0%, #10B981 100%);
+        padding: 1.5rem;
+        border-radius: 16px;
         box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+        color: #FFFFFF;
+        transition: all 0.3s ease;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .metric-card-gradient-success:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
     }
     
     .metric-card-gradient-danger {
         background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        padding: 1.5rem;
+        border-radius: 16px;
         box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+        color: #FFFFFF;
+        transition: all 0.3s ease;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .metric-card-gradient-danger:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
     }
     
     .metric-card-gradient-info {
         background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+        padding: 1.5rem;
+        border-radius: 16px;
         box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+        color: #FFFFFF;
+        transition: all 0.3s ease;
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    
+    .metric-card-gradient-info:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);
     }
     
     /* === Upload Area === */
