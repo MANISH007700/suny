@@ -9,6 +9,35 @@ import plotly.graph_objects as go
 import plotly.express as px
 from styles import get_main_styles
 
+# === Show Logo (Top-Left) ===
+st.logo(
+    "/Users/DLP-I516-206/Desktop/ubi-code/suny/suny/frontend/State_University_of_New_York_seal.svg.png",
+    size="large"
+)
+
+# Make logo bigger, centered, with white background
+st.markdown("""
+<style>
+    [data-testid="stLogo"] {
+        height: auto !important;
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 1.5rem 0 !important;
+    }
+    [data-testid="stLogo"] img {
+        width: 100% !important;
+        height: auto !important;
+        max-width: 180px !important;
+        background: white !important;
+        padding: 1.5rem !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 # === Config & Logging ===
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
