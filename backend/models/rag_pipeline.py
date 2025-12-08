@@ -377,15 +377,30 @@ class RAGPipeline:
             logger.error(f"Error generating embeddings: {e}")
             return {"status": "error", "message": f"Failed to generate embeddings: {str(e)}", "count": 0}
         
-        # Store in vector database
+        # Store in vector database in batches to avoid ChromaDB size limits
+        batch_size = 5000  # ChromaDB max is ~5461, using 5000 to be safe
+        total_courses = len(course_texts)
+        
         try:
-            self.courses_collection.add(
-                embeddings=embeddings,
-                documents=course_texts,
-                metadatas=course_metadatas,
-                ids=course_ids
-            )
-            logger.info(f"Successfully stored {len(course_texts)} courses in vector store")
+            logger.info(f"Storing {total_courses} courses in batches of {batch_size}...")
+            
+            for i in range(0, total_courses, batch_size):
+                end_idx = min(i + batch_size, total_courses)
+                batch_num = (i // batch_size) + 1
+                total_batches = (total_courses + batch_size - 1) // batch_size
+                
+                logger.info(f"Inserting batch {batch_num}/{total_batches}: courses {i} to {end_idx-1}")
+                
+                self.courses_collection.add(
+                    embeddings=embeddings[i:end_idx],
+                    documents=course_texts[i:end_idx],
+                    metadatas=course_metadatas[i:end_idx],
+                    ids=course_ids[i:end_idx]
+                )
+                
+                logger.info(f"Successfully stored batch {batch_num}/{total_batches}")
+            
+            logger.info(f"Successfully stored all {total_courses} courses in vector store")
         except Exception as e:
             logger.error(f"Error storing courses: {e}")
             return {"status": "error", "message": f"Failed to store courses: {str(e)}", "count": 0}
@@ -477,8 +492,27 @@ class RAGPipeline:
         """
         logger.info(f"Course Query: '{question[:100]}...'")
         
+        # Refresh collection reference if needed
+        try:
+            self.courses_collection = self.chroma_client.get_collection(name="suny_courses")
+        except Exception as e:
+            logger.error(f"Failed to get courses collection: {e}")
+            return {
+                "courses": [],
+                "message": "Course catalog is not available. Please initialize courses first."
+            }
+        
         # Check if courses collection is populated
-        if self.courses_collection.count() == 0:
+        try:
+            course_count = self.courses_collection.count()
+        except Exception as e:
+            logger.error(f"Error checking course count: {e}")
+            return {
+                "courses": [],
+                "message": "Course catalog is not available."
+            }
+        
+        if course_count == 0:
             logger.warning("Courses collection is empty")
             return {
                 "courses": [],

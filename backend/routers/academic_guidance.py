@@ -146,39 +146,46 @@ async def chat(request: ChatRequest):
         # Check if this is a course-related query
         is_course_query = _is_course_query(request.question)
         
-        if is_course_query and pipeline.courses_collection.count() > 0:
-            logger.info(f"Detected course query: '{request.question[:50]}...'")
-            
-            # Query courses
-            course_result = pipeline.query_courses(request.question, top_k=5)
-            courses = course_result.get("courses", [])
-            
-            if courses:
-                # Generate course recommendations
-                try:
-                    recommendations = pipeline.llm_client.generate_course_recommendations(
-                        student_query=request.question,
-                        retrieved_courses=courses,
-                        student_context=None
-                    )
+        # Try to handle course queries if courses are loaded
+        if is_course_query:
+            try:
+                # Check if courses collection exists and has data
+                if hasattr(pipeline, 'courses_collection') and pipeline.courses_collection.count() > 0:
+                    logger.info(f"Detected course query: '{request.question[:50]}...'")
                     
-                    # Format citations from courses
-                    citations = []
-                    for course in courses[:3]:  # Show top 3 in citations
-                        metadata = course.get('metadata', {})
-                        citations.append({
-                            "doc_id": f"{metadata.get('institution', 'Unknown')} - {metadata.get('code', 'N/A')}",
-                            "snippet": f"{metadata.get('title', 'N/A')} | {metadata.get('subject_area', 'N/A')} | {metadata.get('credits', 'N/A')} credits"
-                        })
+                    # Query courses
+                    course_result = pipeline.query_courses(request.question, top_k=5)
+                    courses = course_result.get("courses", [])
                     
-                    return ChatResponse(
-                        answer=recommendations,
-                        citations=citations,
-                        escalation_id=None
-                    )
-                except Exception as e:
-                    logger.error(f"Error generating course recommendations: {e}")
-                    # Fall through to regular RAG query
+                    if courses:
+                        # Generate course recommendations
+                        try:
+                            recommendations = pipeline.llm_client.generate_course_recommendations(
+                                student_query=request.question,
+                                retrieved_courses=courses,
+                                student_context=None
+                            )
+                            
+                            # Format citations from courses
+                            citations = []
+                            for course in courses[:3]:  # Show top 3 in citations
+                                metadata = course.get('metadata', {})
+                                citations.append({
+                                    "doc_id": f"{metadata.get('institution', 'Unknown')} - {metadata.get('code', 'N/A')}",
+                                    "snippet": f"{metadata.get('title', 'N/A')} | {metadata.get('subject_area', 'N/A')} | {metadata.get('credits', 'N/A')} credits"
+                                })
+                            
+                            return ChatResponse(
+                                answer=recommendations,
+                                citations=citations,
+                                escalation_id=None
+                            )
+                        except Exception as e:
+                            logger.error(f"Error generating course recommendations: {e}")
+                            # Fall through to regular RAG query
+            except Exception as e:
+                # Collection doesn't exist or has been deleted - log and continue with regular RAG
+                logger.warning(f"Courses collection not available: {e}. Falling back to regular RAG.")
         
         # Regular RAG query for non-course questions
         # Check if vector store is populated

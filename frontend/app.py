@@ -410,7 +410,7 @@ if tab1:
                     
                     if transcribed:
                         final_text = transcribed
-                        st.success(f"✅ Transcribed: \"{transcribed[:100]}...\"")
+                        st.success(f"✅ Transcribed: \"{transcribed}...\"")
                         time.sleep(1)  # Brief pause to show transcription
                     else:
                         st.error("❌ Failed to transcribe audio. Please try again.")
