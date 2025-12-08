@@ -28,6 +28,31 @@ def get_rag_pipeline():
         _rag_pipeline = RAGPipeline()
     return _rag_pipeline
 
+def _is_course_query(question: str) -> bool:
+    """
+    Detect if a question is asking about course recommendations
+    """
+    question_lower = question.lower()
+    
+    course_keywords = [
+        'course', 'courses', 'class', 'classes',
+        'what should i take', 'what can i take',
+        'recommend', 'recommendation', 'suggestions',
+        'learn about', 'study', 'interested in',
+        'major in', 'minor in',
+        'career', 'job', 'profession',
+        'subject', 'topic',
+        'enroll', 'register',
+        'credits', 'semester'
+    ]
+    
+    # Check if question contains course-related keywords
+    for keyword in course_keywords:
+        if keyword in question_lower:
+            return True
+    
+    return False
+
 @router.get("/health")
 async def health():
     """Health check endpoint"""
@@ -114,10 +139,48 @@ async def initialize(request: InitRequest = InitRequest()):
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """Chat endpoint for RAG queries with automatic escalation detection"""
+    """Chat endpoint for RAG queries with automatic escalation detection and course recommendations"""
     try:
         pipeline = get_rag_pipeline()
         
+        # Check if this is a course-related query
+        is_course_query = _is_course_query(request.question)
+        
+        if is_course_query and pipeline.courses_collection.count() > 0:
+            logger.info(f"Detected course query: '{request.question[:50]}...'")
+            
+            # Query courses
+            course_result = pipeline.query_courses(request.question, top_k=5)
+            courses = course_result.get("courses", [])
+            
+            if courses:
+                # Generate course recommendations
+                try:
+                    recommendations = pipeline.llm_client.generate_course_recommendations(
+                        student_query=request.question,
+                        retrieved_courses=courses,
+                        student_context=None
+                    )
+                    
+                    # Format citations from courses
+                    citations = []
+                    for course in courses[:3]:  # Show top 3 in citations
+                        metadata = course.get('metadata', {})
+                        citations.append({
+                            "doc_id": f"{metadata.get('institution', 'Unknown')} - {metadata.get('code', 'N/A')}",
+                            "snippet": f"{metadata.get('title', 'N/A')} | {metadata.get('subject_area', 'N/A')} | {metadata.get('credits', 'N/A')} credits"
+                        })
+                    
+                    return ChatResponse(
+                        answer=recommendations,
+                        citations=citations,
+                        escalation_id=None
+                    )
+                except Exception as e:
+                    logger.error(f"Error generating course recommendations: {e}")
+                    # Fall through to regular RAG query
+        
+        # Regular RAG query for non-course questions
         # Check if vector store is populated
         if not pipeline.is_vector_store_populated():
             logger.warning("Chat attempted but vector store is empty")

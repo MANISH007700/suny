@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import academic_guidance, study_tools, advisor
+from routers import academic_guidance, study_tools, advisor, courses
 import logging
 
 
@@ -37,13 +37,19 @@ app.add_middleware(
 app.include_router(academic_guidance.router, prefix="/academic", tags=["academic"])
 app.include_router(study_tools.router, prefix="/study", tags=["study"])
 app.include_router(advisor.router, prefix="/advisor", tags=["advisor"])
+app.include_router(courses.router, prefix="/courses", tags=["courses"])
 
 @app.get("/")
 async def root():
     return {
         "message": "Academic Guidance RAG API",
         "status": "running",
-        "endpoints": ["/academic/chat", "/init"]
+        "endpoints": {
+            "academic": ["/academic/chat", "/academic/init", "/academic/status"],
+            "courses": ["/courses/init", "/courses/recommend", "/courses/status", "/courses/search"],
+            "advisor": ["/advisor/escalations", "/advisor/students"],
+            "study": ["/study/flashcards", "/study/quiz"]
+        }
     }
 
 @app.get("/health")

@@ -127,3 +127,46 @@ class AudioTranscriptionResponse(BaseModel):
     text: str = Field(..., description="Transcribed text from audio")
     success: bool = Field(..., description="Whether transcription was successful")
     error: Optional[str] = Field(default=None, description="Error message if any")
+
+# === COURSE RECOMMENDATION SCHEMAS ===
+
+class CourseRecommendationRequest(BaseModel):
+    """Request model for course recommendations"""
+    query: str = Field(..., description="Student's question or interest about courses")
+    top_k: int = Field(default=5, ge=1, le=10, description="Number of courses to retrieve")
+    student_context: Optional[dict] = Field(default=None, description="Optional student context (major, level, interests)")
+
+class CourseMetadata(BaseModel):
+    """Course metadata"""
+    course_id: str = Field(..., description="Course ID")
+    title: str = Field(..., description="Course title")
+    institution: str = Field(..., description="Institution name")
+    code: str = Field(..., description="Course code")
+    subject_area: str = Field(..., description="Subject area")
+    credits: str = Field(..., description="Number of credits")
+    level: str = Field(default="", description="Course level")
+    start_date: str = Field(default="", description="Start date")
+    delivery_mode: str = Field(default="", description="Delivery mode")
+    instructor: str = Field(default="", description="Instructor name")
+    url: str = Field(default="", description="Course URL")
+
+class CourseRecommendationResponse(BaseModel):
+    """Response model for course recommendations"""
+    recommendations: str = Field(..., description="Formatted course recommendations")
+    courses: List[dict] = Field(..., description="List of retrieved courses with metadata")
+    count: int = Field(..., description="Number of courses found")
+
+class InitCoursesRequest(BaseModel):
+    """Request model for course initialization"""
+    courses_json_path: Optional[str] = Field(
+        default="/Users/DLP-I516-206/Desktop/ubi-code/suny/suny_courses_data/suny_all_courses_html.json",
+        description="Path to courses JSON file"
+    )
+    force_rebuild: bool = Field(default=False, description="Force rebuild even if data exists")
+
+class InitCoursesResponse(BaseModel):
+    """Response model for course initialization"""
+    status: str = Field(..., description="Status of initialization")
+    message: str = Field(..., description="Detailed message")
+    count: int = Field(..., description="Number of courses processed")
+    skipped: bool = Field(default=False, description="Whether initialization was skipped")

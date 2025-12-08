@@ -29,7 +29,7 @@ Your role is to help students with:
 IMPORTANT RULES:
 1. Use ONLY the retrieved context from the provided PDF documents
 2. If information is not in the context, clearly state "I don't have that information in the available documents"
-3. Always cite your sources by mentioning the document name and page and id 
+3. Always cite your sources by mentioning the document name and page and id and also the URL of the course 
 4. Be specific and provide detailed answers when information is available
 5. If asked about overlapping requirements, analyze all relevant documents
 6. Format your response clearly with bullet points or numbered lists when appropriate
@@ -525,3 +525,136 @@ Generate ONLY the guidance notes."""
         except Exception as e:
             logger.error(f"Error generating guidance notes: {e}")
             raise
+    
+    def generate_course_recommendations(self, student_query: str, retrieved_courses: List[Dict], student_context: Dict = None) -> str:
+        """
+        Generate personalized course recommendations based on student interests and retrieved courses
+        
+        Args:
+            student_query: Student's question/interest about courses
+            retrieved_courses: List of relevant courses from vector search
+            student_context: Optional student profile information
+        
+        Returns:
+            Formatted course recommendations
+        """
+        try:
+            # Build course context string
+            course_context = self._build_course_context(retrieved_courses)
+            
+            # Build student context string
+            student_info = ""
+            if student_context:
+                student_info = f"""
+STUDENT CONTEXT:
+- Major: {student_context.get('major', 'Not specified')}
+- Academic Level: {student_context.get('level', 'Not specified')}
+- Interests: {student_context.get('interests', 'Not specified')}
+- Career Goals: {student_context.get('career_goals', 'Not specified')}
+"""
+            
+            # Use the specialized course recommendation prompt
+            system_prompt = """You are an expert academic advisor for SUNY with deep knowledge of all 64 campuses and 22,000+ courses.
+
+YOUR ROLE:
+- Help students discover courses aligned with their goals
+- Provide personalized academic guidance
+- Explain complex academic paths clearly
+- Be supportive and encouraging
+
+YOUR KNOWLEDGE:
+- All SUNY courses, programs, and campuses
+- Career paths and industry requirements
+- Course prerequisites and sequences
+- Learning modalities (online, hybrid, in-person)
+
+RESPONSE GUIDELINES:
+1. Always cite specific courses with institution names and it's URL
+2. Explain WHY you recommend each course
+3. Consider student's context (level, interests, goals)
+4. Provide 2-4 specific recommendations, not overwhelming lists
+5. Mention prerequisites and requirements
+6. Include practical details (credits, delivery mode, workload)
+7. Connect courses to career outcomes when relevant
+8. Be honest about difficulty and time commitment
+9. Suggest next steps and resources
+10. Use encouraging, student-centered language
+
+FORMATTING:
+- Use clear headings for different sections
+- Bullet points for course lists
+- **Bold** for course names
+- Include relevant emojis for readability (📚 🎓 💻 🌟)
+- **CRITICAL**: For each course recommendation, you MUST include a "Course Link:" or "Enroll here:" line with the URL provided in the course data"""
+
+            user_prompt = f"""STUDENT QUESTION:
+{student_query}
+{student_info}
+
+RELEVANT COURSES FOUND:
+{course_context}
+
+Please provide personalized course recommendations based on the student's interests and the courses above. Focus on 2-5 most relevant courses and explain why each is a good fit.
+
+IMPORTANT: For EACH course you recommend, you MUST include the course URL (found in the course data above) so students can click to register or learn more. Format it as "🔗 Course Link: [URL]" or "📝 Enroll here: [URL]"."""
+
+            # Make API request
+            headers = self._get_headers()
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                "max_tokens": 1500,
+                "temperature": 0.2  # Slightly higher for more engaging responses
+            }
+            
+            logger.info("Generating course recommendations...")
+            response = requests.post(self.base_url, headers=headers, json=payload, timeout=20)
+            
+            # Handle rate limiting
+            if response.status_code == 429:
+                logger.warning("Rate limited by OpenRouter")
+                return "I'm currently being rate-limited. Please wait a moment and try again."
+            
+            response.raise_for_status()
+            
+            data = response.json()
+            recommendations = data['choices'][0]['message']['content']
+            
+            logger.info("Successfully generated course recommendations")
+            return recommendations
+            
+        except Exception as e:
+            logger.error(f"Error generating course recommendations: {e}")
+            raise
+    
+    def _build_course_context(self, courses: List[Dict]) -> str:
+        """Build formatted context string from retrieved courses"""
+        if not courses:
+            return "No courses found."
+        
+        context_parts = []
+        for i, course in enumerate(courses[:5], 1):  # Limit to top 5
+            metadata = course.get('metadata', {})
+            
+            course_info = f"""
+Course {i}:
+- Title: {metadata.get('title', 'Unknown')}
+- Code: {metadata.get('code', 'N/A')}
+- Institution: {metadata.get('institution', 'Unknown')}
+- Subject: {metadata.get('subject_area', 'N/A')}
+- Credits: {metadata.get('credits', 'N/A')}
+- Delivery Mode: {metadata.get('delivery_mode', 'N/A')}
+- Start Date: {metadata.get('start_date', 'N/A')}
+- Instructor: {metadata.get('instructor', 'TBA')}
+- **COURSE REGISTRATION URL**: {metadata.get('url', 'N/A')} (IMPORTANT: Include this URL in your recommendation)
+"""
+            # Add full course text if available
+            if course.get('text'):
+                course_info += f"- Details: {course['text'][:500]}\n"
+            
+            context_parts.append(course_info)
+        
+        return "\n".join(context_parts)

@@ -72,6 +72,7 @@ class RAGPipeline:
         
         self.chroma_client = chromadb.PersistentClient(path=persist_dir)
         
+        # Initialize academic documents collection
         try:
             self.vector_store = self.chroma_client.get_collection(name="academic_documents")
             logger.info(f"Loaded existing Chroma collection with {self.vector_store.count()} documents")
@@ -82,6 +83,18 @@ class RAGPipeline:
                 metadata={"description": "SUNY academic documents"}
             )
             logger.info("Created new Chroma collection")
+        
+        # Initialize courses collection
+        try:
+            self.courses_collection = self.chroma_client.get_collection(name="suny_courses")
+            logger.info(f"Loaded existing courses collection with {self.courses_collection.count()} courses")
+        except Exception as e:
+            logger.info(f"Creating new courses collection (reason: {e})")
+            self.courses_collection = self.chroma_client.create_collection(
+                name="suny_courses",
+                metadata={"description": "SUNY course catalog"}
+            )
+            logger.info("Created new courses collection")
         
         self.vector_store_type = "chroma"
         logger.info("Using Chroma vector store")
@@ -270,6 +283,248 @@ class RAGPipeline:
             "count": final_count,
             "new_chunks": len(all_chunks)
         }
+
+    def initialize_courses(self, courses_json_path: str, force_rebuild: bool = False) -> Dict:
+        """
+        Load SUNY courses from JSON and store in vector database.
+        
+        Args:
+            courses_json_path: Path to JSON file containing course data
+            force_rebuild: If True, delete existing collection and rebuild
+        
+        Returns:
+            Dict with status, message, and count
+        """
+        logger.info(f"Starting course initialization from {courses_json_path} (force_rebuild={force_rebuild})")
+        
+        if not os.path.exists(courses_json_path):
+            logger.error(f"Course JSON file not found: {courses_json_path}")
+            return {"status": "error", "message": "Course JSON file not found", "count": 0}
+        
+        # Handle force rebuild
+        if force_rebuild:
+            logger.info("Force rebuild requested - clearing courses collection")
+            try:
+                self.chroma_client.delete_collection("suny_courses")
+                logger.info("Deleted existing courses collection")
+            except Exception as e:
+                logger.info(f"No existing courses collection to delete: {e}")
+            
+            self.courses_collection = self.chroma_client.create_collection(
+                name="suny_courses",
+                metadata={"description": "SUNY course catalog"}
+            )
+            logger.info("Created fresh courses collection")
+        
+        # Check if already populated
+        if not force_rebuild and self.courses_collection.count() > 0:
+            count = self.courses_collection.count()
+            logger.info(f"Courses collection already populated with {count} courses")
+            return {
+                "status": "success",
+                "message": f"Already initialized with {count} courses",
+                "count": count,
+                "skipped": True
+            }
+        
+        # Load courses from JSON
+        try:
+            with open(courses_json_path, 'r') as f:
+                courses = json.load(f)
+            logger.info(f"Loaded {len(courses)} courses from JSON")
+        except Exception as e:
+            logger.error(f"Error loading courses JSON: {e}")
+            return {"status": "error", "message": f"Failed to load JSON: {str(e)}", "count": 0}
+        
+        # Prepare course documents for embedding
+        course_texts = []
+        course_metadatas = []
+        course_ids = []
+        
+        for idx, course in enumerate(courses):
+            # Create rich text representation for embedding
+            course_text = self._format_course_for_embedding(course)
+            course_texts.append(course_text)
+            
+            # Store metadata
+            course_metadatas.append({
+                "course_id": course.get("id", ""),
+                "title": course.get("title", ""),
+                "institution": course.get("institution", ""),
+                "code": course.get("code", ""),
+                "subject_area": course.get("subject_area", ""),
+                "credits": str(course.get("credits", "")),
+                "level": course.get("level", ""),
+                "start_date": course.get("start_date", ""),
+                "delivery_mode": course.get("delivery_mode", ""),
+                "instructor": course.get("instructor", ""),
+                "url": course.get("url", "")
+            })
+            
+            # Use index to ensure unique IDs
+            course_ids.append(f"course_{idx}")
+        
+        if not course_texts:
+            logger.warning("No courses to embed")
+            return {"status": "error", "message": "No courses to process", "count": 0}
+        
+        # Generate embeddings in batches
+        logger.info(f"Generating embeddings for {len(course_texts)} courses...")
+        try:
+            embeddings = self.embedding_model.embed_batch(course_texts, batch_size=64)
+            logger.info(f"Generated {len(embeddings)} embeddings")
+        except Exception as e:
+            logger.error(f"Error generating embeddings: {e}")
+            return {"status": "error", "message": f"Failed to generate embeddings: {str(e)}", "count": 0}
+        
+        # Store in vector database
+        try:
+            self.courses_collection.add(
+                embeddings=embeddings,
+                documents=course_texts,
+                metadatas=course_metadatas,
+                ids=course_ids
+            )
+            logger.info(f"Successfully stored {len(course_texts)} courses in vector store")
+        except Exception as e:
+            logger.error(f"Error storing courses: {e}")
+            return {"status": "error", "message": f"Failed to store courses: {str(e)}", "count": 0}
+        
+        final_count = self.courses_collection.count()
+        logger.info(f"Courses collection now contains {final_count} courses")
+        
+        return {
+            "status": "success",
+            "message": f"Successfully ingested {len(course_texts)} courses",
+            "count": final_count
+        }
+    
+    def _format_course_for_embedding(self, course: Dict) -> str:
+        """Format course data into rich text for embedding"""
+        parts = []
+        
+        # Title and code
+        title = course.get("title", "")
+        code = course.get("code", "")
+        if title:
+            parts.append(f"Course: {title}")
+        if code:
+            parts.append(f"Code: {code}")
+        
+        # Institution
+        institution = course.get("institution", "")
+        if institution:
+            parts.append(f"Institution: {institution}")
+        
+        # Subject area
+        subject = course.get("subject_area", "")
+        if subject:
+            parts.append(f"Subject: {subject}")
+        
+        # Description
+        description = course.get("description", "")
+        if description:
+            parts.append(f"Description: {description}")
+        
+        # Prerequisites
+        prereqs = course.get("prerequisites", "")
+        if prereqs:
+            parts.append(f"Prerequisites: {prereqs}")
+        
+        # Learning outcomes
+        outcomes = course.get("learning_outcomes", [])
+        if outcomes:
+            parts.append(f"Learning Outcomes: {', '.join(outcomes)}")
+        
+        # Credits and level
+        credits = course.get("credits", "")
+        level = course.get("level", "")
+        if credits:
+            parts.append(f"Credits: {credits}")
+        if level:
+            parts.append(f"Level: {level}")
+        
+        # Delivery mode
+        delivery = course.get("delivery_mode", "")
+        if delivery:
+            parts.append(f"Delivery: {delivery}")
+        
+        # Start date and semester
+        start_date = course.get("start_date", "")
+        semester = course.get("semester", "")
+        if start_date:
+            parts.append(f"Start Date: {start_date}")
+        if semester:
+            parts.append(f"Semester: {semester}")
+        
+        # Instructor
+        instructor = course.get("instructor", "")
+        if instructor:
+            parts.append(f"Instructor: {instructor}")
+        
+        return " | ".join(parts)
+    
+    def query_courses(self, question: str, top_k: int = 5) -> Dict:
+        """
+        Query the course catalog based on student interests/goals
+        
+        Args:
+            question: Student's query about courses
+            top_k: Number of courses to retrieve
+        
+        Returns:
+            Dict with retrieved courses and metadata
+        """
+        logger.info(f"Course Query: '{question[:100]}...'")
+        
+        # Check if courses collection is populated
+        if self.courses_collection.count() == 0:
+            logger.warning("Courses collection is empty")
+            return {
+                "courses": [],
+                "message": "Course catalog is empty. Please initialize courses first."
+            }
+        
+        # Generate query embedding
+        query_embedding = self.embedding_model.embed_text(question)
+        logger.info(f"Generated query embedding (dim: {len(query_embedding)})")
+        
+        # Query courses collection
+        try:
+            results = self.courses_collection.query(
+                query_embeddings=[query_embedding],
+                n_results=min(top_k, 10),  # Limit to max 10 courses
+                include=["metadatas", "documents", "distances"]
+            )
+            
+            logger.info(f"Retrieved {len(results['documents'][0])} courses")
+            logger.info(f"Distances: {results.get('distances', [[]])[0]}")
+            
+            # Build course list from results
+            courses = []
+            for doc, meta, dist in zip(
+                results['documents'][0],
+                results['metadatas'][0],
+                results.get('distances', [[]])[0]
+            ):
+                courses.append({
+                    "text": doc,
+                    "metadata": meta,
+                    "relevance_score": float(1 - dist) if dist is not None else 0.0  # Convert distance to similarity
+                })
+                logger.info(f"  -> Course: {meta.get('title', 'Unknown')}, Institution: {meta.get('institution', 'Unknown')}")
+            
+            return {
+                "courses": courses,
+                "message": f"Found {len(courses)} relevant courses"
+            }
+            
+        except Exception as e:
+            logger.error(f"Error querying courses: {e}")
+            return {
+                "courses": [],
+                "message": f"Error retrieving courses: {str(e)}"
+            }
 
     def query(self, question: str, top_k: int = 5) -> Dict:
         """Query the knowledge base"""
