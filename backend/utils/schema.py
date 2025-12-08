@@ -121,3 +121,9 @@ class CreateEscalationRequest(BaseModel):
     conversation_history: List[ConversationMessage] = []
     escalation_reason: str = "Manual escalation"
     priority: int = 1
+
+class AudioTranscriptionResponse(BaseModel):
+    """Response model for audio transcription"""
+    text: str = Field(..., description="Transcribed text from audio")
+    success: bool = Field(..., description="Whether transcription was successful")
+    error: Optional[str] = Field(default=None, description="Error message if any")

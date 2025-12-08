@@ -57,7 +57,8 @@ st.markdown(get_main_styles(), unsafe_allow_html=True)
 # === Session State ===
 for key in ['messages', 'citations', 'initialized', 'auto_init_done', 'study_materials', 
             'student_id', 'selected_escalation', 'user_mode', 'show_escalation_form',
-            'last_question', 'last_answer', 'last_escalation_id']:
+            'last_question', 'last_answer', 'last_escalation_id', 'transcribed_text',
+            'show_audio_input']:
     if key not in st.session_state:
         if key in ['messages', 'citations', 'study_materials']:
             st.session_state[key] = []
@@ -65,9 +66,9 @@ for key in ['messages', 'citations', 'initialized', 'auto_init_done', 'study_mat
             st.session_state[key] = "STUDENT_001"  # Default student ID
         elif key == 'user_mode':
             st.session_state[key] = "Student"  # Default mode: Student, Advisor, or Administrator
-        elif key == 'show_escalation_form':
+        elif key in ['show_escalation_form', 'show_audio_input']:
             st.session_state[key] = False
-        elif key in ['last_question', 'last_answer']:
+        elif key in ['last_question', 'last_answer', 'transcribed_text']:
             st.session_state[key] = ""
         elif key == 'last_escalation_id':
             st.session_state[key] = None
@@ -107,11 +108,34 @@ def initialize_system(force_rebuild=False):
     except Exception as e:
         return False, str(e), 0, False
 
+def transcribe_audio(audio_file):
+    """Send audio file to backend for transcription"""
+    try:
+        files = {"audio_file": audio_file}
+        r = requests.post(
+            f"{API_BASE}/academic/transcribe-audio",
+            files=files,
+            timeout=30
+        )
+        if r.status_code == 200:
+            data = r.json()
+            if data.get("success"):
+                return data.get("text", "")
+            else:
+                st.error(f"Transcription failed: {data.get('error', 'Unknown error')}")
+                return None
+        else:
+            st.error(f"Transcription error: {r.status_code}")
+            return None
+    except Exception as e:
+        st.error(f"Error transcribing audio: {e}")
+        return None
+
 def send_message(question: str, top_k: int = 5, student_id: str = None):
     try:
         r = requests.post(
-            f"{API_BASE}/academic/chat", 
-            json={"question": question, "top_k": top_k, "student_id": student_id}, 
+            f"{API_BASE}/academic/chat",
+            json={"question": question, "top_k": top_k, "student_id": student_id},
             timeout=120
         )
         return r.json() if r.status_code == 200 else {"answer": "Error", "citations": [], "escalation_id": None}
@@ -265,6 +289,28 @@ if tab1:
             st.warning("⚠️ Please initialize the system first using the sidebar")
             st.stop()
 
+        # Audio input toggle and recording section (above chat)
+        audio_mode = st.toggle("🎤 Voice Input", key="audio_toggle", help="Click to enable live audio recording")
+        
+        audio_send_clicked = False
+        if audio_mode:
+            # Browser-based audio recording using st.audio_input
+            audio_data = st.audio_input(
+                "Click to start recording",
+                key="audio_recorder",
+                help="🎤 Click the microphone icon to start recording. Click again to stop."
+            )
+            
+            # Store audio in session state
+            if audio_data is not None:
+                st.session_state.recorded_audio = audio_data
+                st.success("✅ Audio recorded!")
+                
+                # Show Send button right next to the audio
+                audio_send_clicked = st.button("📤 Send", key="audio_send_btn", type="primary", use_container_width=True)
+        
+        st.markdown("---")
+
         # Display chat messages
         for msg in st.session_state.messages:
             if msg["role"] == "user":
@@ -311,30 +357,77 @@ if tab1:
                     </div>
                     """, unsafe_allow_html=True)
 
-        # Chat input
-        user_prompt = st.text_input("Ask about courses, requirements, policies...", 
-                                    key="chat_text_tab",
-                                    placeholder="e.g., What are the CS major requirements?")
+        # Text input (shown when audio mode is off)
+        st.markdown("### 💬 Ask Your Question")
         
-        col_send, col_escalate = st.columns([3, 1])
+        user_prompt = ""
+        if not audio_mode:
+            # Traditional text input
+            user_prompt = st.text_input(
+                "Ask about courses, requirements, policies...", 
+                key="chat_text_tab",
+                placeholder="e.g., What are the CS major requirements?"
+            )
+        else:
+            # Audio mode is active, user_prompt will be set when Send is clicked
+            if st.session_state.get('recorded_audio') is not None:
+                user_prompt = "[AUDIO_RECORDED]"  # Placeholder to indicate audio is ready
         
-        with col_send:
-            send_clicked = st.button("📤 Send", key="send_tab", type="primary", use_container_width=True)
+        # Action buttons (only show if not in audio mode or no audio recorded)
+        if not audio_mode or st.session_state.get('recorded_audio') is None:
+            col_send, col_clear, col_escalate = st.columns([2, 1, 2])
+            
+            with col_send:
+                send_clicked = st.button("📤 Send", key="send_tab", type="primary", use_container_width=True)
+            
+            with col_clear:
+                # Empty column for spacing
+                st.empty()
+            
+            with col_escalate:
+                if st.session_state.user_mode == "Student" and st.session_state.messages:
+                    escalate_clicked = st.button("🆘 Escalate to Advisor", key="escalate_btn", use_container_width=True)
+                else:
+                    escalate_clicked = False
+        else:
+            # In audio mode with recording, send button is shown above
+            send_clicked = False
+            escalate_clicked = False
         
-        with col_escalate:
-            if st.session_state.user_mode == "Student" and st.session_state.messages:
-                escalate_clicked = st.button("🆘 Escalate to Advisor", key="escalate_btn", use_container_width=True)
-            else:
-                escalate_clicked = False
-        
-        if send_clicked or (user_prompt and user_prompt != st.session_state.get('last_prompt', '')):
-            if user_prompt:
-                st.session_state.last_prompt = user_prompt
-                st.session_state.messages.append({"role": "user", "content": user_prompt})
+        # Handle send button click (from either location)
+        if send_clicked or audio_send_clicked:
+            final_text = ""
+            
+            # If in audio mode, transcribe the audio first
+            if audio_mode and st.session_state.get('recorded_audio') is not None:
+                with st.spinner("🎧 Transcribing your audio... Please wait"):
+                    # Get audio data
+                    audio_file = st.session_state.recorded_audio
+                    audio_file.seek(0)  # Reset file pointer
+                    
+                    # Transcribe audio
+                    transcribed = transcribe_audio(audio_file)
+                    
+                    if transcribed:
+                        final_text = transcribed
+                        st.success(f"✅ Transcribed: \"{transcribed[:100]}...\"")
+                        time.sleep(1)  # Brief pause to show transcription
+                    else:
+                        st.error("❌ Failed to transcribe audio. Please try again.")
+                        st.stop()
+            
+            # If in text mode, use the text input
+            elif not audio_mode and user_prompt:
+                final_text = user_prompt
+            
+            # Send to LLM if we have text
+            if final_text and final_text.strip():
+                st.session_state.last_prompt = final_text
+                st.session_state.messages.append({"role": "user", "content": final_text})
                 
-                with st.spinner("🔍 Searching knowledge base..."):
+                with st.spinner("🤖 AI is thinking... Searching knowledge base"):
                     resp = send_message(
-                        user_prompt, 
+                        final_text, 
                         st.session_state.get("top_k_slider", 5),
                         st.session_state.get("student_id") if st.session_state.user_mode == "Student" else None
                     )
@@ -343,11 +436,22 @@ if tab1:
                     st.session_state.citations = resp.get("citations", [])
                     
                     # Store last response for potential manual escalation
-                    st.session_state.last_question = user_prompt
+                    st.session_state.last_question = final_text
                     st.session_state.last_answer = answer
                     st.session_state.last_escalation_id = resp.get("escalation_id")
+                    
+                    # Clear audio recording if in audio mode
+                    if audio_mode:
+                        st.session_state.recorded_audio = None
                 
+                st.success("✅ Response received!")
+                time.sleep(0.5)
                 st.rerun()
+            else:
+                if audio_mode:
+                    st.warning("⚠️ Please record audio first before sending")
+                else:
+                    st.warning("⚠️ Please enter a question first")
         
         # Manual Escalation Dialog
         if escalate_clicked and st.session_state.messages:

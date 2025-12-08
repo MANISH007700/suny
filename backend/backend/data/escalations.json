@@ -598,5 +598,255 @@
     ],
     "assigned_to": null,
     "priority": 2
+  },
+  {
+    "id": "92929eea-272b-4456-8763-c7f93e607489",
+    "student_id": "STUDENT_001",
+    "question": "Help me understand about quantization, supervised learning and unsupervised learning. ",
+    "ai_response": "Based on the provided documents, here's information about quantization and supervised learning. Unsupervised learning is not mentioned in the given context.\n\n### Quantization\n\nQuantization is a technique used to reduce the bit-width of data, often in the context of neural networks.\n\n*   **Post-Training Quantization:**\n    *   These techniques are the initial tools in the quantization toolkit. (Document 3, page 1)\n    *   They are effective and fast to implement because they do not require retraining the network with labeled data. (Document 3, page 1)\n    *   However, they have limitations, especially when aiming for low-bit quantization of activations (e.g., 4-bit and below). (Document 3, page 1)\n    *   Post-training techniques may not be sufficient to mitigate the large quantization error incurred by low-bit quantization. (Document 3, page 1)\n\n*   **Quantization-Aware Training (QAT):**\n    *   When post-training techniques are insufficient for low-bit quantization, QAT is used. (Document 3, page 1)\n    *   QAT models the quantization noise source during training. (Document 3, page 1)\n    *   This allows the model to find more optimal solutions compared to post-training quantization. (Document 3, page 1)\n    *   The higher accuracy of QAT comes with the usual costs of neural network training, such as longer training times, the need for labeled data, and hyper-parameter search. (Document 3, page 1)\n    *   QAT involves back-propagation in networks with simulated quantization. (Document 3, page 1)\n    *   Figure 10 illustrates a computational graph for the forward and backward pass in QAT, where the forward pass is identical to Figure 4, but the backward pass effectively skips the quantizer block due to the Straight-Through Estimator (STE) assumption. (Document 5, page 8)\n    *   The gradient definition for back-propagation through quantization blocks is provided in equation (37). (Document 5, page 8)\n\n### Supervised Learning\n\nSupervised learning is a type of machine learning problem where the goal is to learn a function that maps input values to output values based on a given training set.\n\n*   **Definition:**\n    *   In supervised learning, you are given a dataset of \"correct answers\" for each example. (Document 4, page 7)\n    *   The goal is to learn a function `h: X \u2192 Y` such that `h(x)` is a \"good\" predictor for the corresponding value of `y`. (Document 4, page 7)\n    *   This function `h` is called a hypothesis. (Document 4, page 7)\n\n*   **Training Set:**\n    *   A training set is a list of `n` training examples `{(x(i), y(i)); i = 1,...,n}`. (Document 4, page 7)\n    *   The superscript `(i)` is an index into the training set and does not denote exponentiation. (Document 4, page 7)\n\n*   **Types of Supervised Learning Problems:**\n    *   **Regression Problem:** This occurs when the target variable `y` that you are trying to predict is continuous. (Document 4, page 7)\n        *   *Example:* Predicting the price of a house based on living area and number of bedrooms. (Document 1, page 1; Document 4, page 7) In this example, `x` could be a two-dimensional vector representing living area and number of bedrooms, and `y` would be the price. (Document 1, page 1)\n        *   A linear function `h\u03b8(x) = \u03b80 + \u03b81x1 + \u03b82x2` can be used to approximate `y`, where `\u03b8i` are parameters. (Document 1, page 1)\n    *   **Classification Problem:** This occurs when `y` can take on only a small number of discrete values. (Document 4, page 7)\n        *   *Example:* Predicting if a dwelling is a house or an apartment. (Document 1, page 1; Document 4, page 7)\n        *   Another example is distinguishing between elephants (`y=1`) and dogs (`y=0`) based on animal features. (Document 2, page 4)\n        *   Algorithms like logistic regression or the perceptron algorithm try to find a decision boundary (e.g., a straight line)",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "hey",
+        "timestamp": "2025-12-08T18:00:06.494934"
+      },
+      {
+        "role": "assistant",
+        "content": "I can help you with information from the provided SUNY documents. What specifically would you like to know?",
+        "timestamp": "2025-12-08T18:00:06.494948"
+      },
+      {
+        "role": "user",
+        "content": "Help me understand about quantization, supervised learning and unsupervised learning. ",
+        "timestamp": "2025-12-08T18:00:06.494951"
+      },
+      {
+        "role": "user",
+        "content": "Help me understand about quantization, supervised learning and unsupervised learning. ",
+        "timestamp": "2025-12-08T18:00:06.494953"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the provided documents, here's information about quantization and supervised learning. Unsupervised learning is not mentioned in the given context.\n\n### Quantization\n\nQuantization is a technique used to reduce the bit-width of data, often in the context of neural networks.\n\n*   **Post-Training Quantization:**\n    *   These techniques are the initial tools in the quantization toolkit. (Document 3, page 1)\n    *   They are effective and fast to implement because they do not require retraining the network with labeled data. (Document 3, page 1)\n    *   However, they have limitations, especially when aiming for low-bit quantization of activations (e.g., 4-bit and below). (Document 3, page 1)\n    *   Post-training techniques may not be sufficient to mitigate the large quantization error incurred by low-bit quantization. (Document 3, page 1)\n\n*   **Quantization-Aware Training (QAT):**\n    *   When post-training techniques are insufficient for low-bit quantization, QAT is used. (Document 3, page 1)\n    *   QAT models the quantization noise source during training. (Document 3, page 1)\n    *   This allows the model to find more optimal solutions compared to post-training quantization. (Document 3, page 1)\n    *   The higher accuracy of QAT comes with the usual costs of neural network training, such as longer training times, the need for labeled data, and hyper-parameter search. (Document 3, page 1)\n    *   QAT involves back-propagation in networks with simulated quantization. (Document 3, page 1)\n    *   Figure 10 illustrates a computational graph for the forward and backward pass in QAT, where the forward pass is identical to Figure 4, but the backward pass effectively skips the quantizer block due to the Straight-Through Estimator (STE) assumption. (Document 5, page 8)\n    *   The gradient definition for back-propagation through quantization blocks is provided in equation (37). (Document 5, page 8)\n\n### Supervised Learning\n\nSupervised learning is a type of machine learning problem where the goal is to learn a function that maps input values to output values based on a given training set.\n\n*   **Definition:**\n    *   In supervised learning, you are given a dataset of \"correct answers\" for each example. (Document 4, page 7)\n    *   The goal is to learn a function `h: X \u2192 Y` such that `h(x)` is a \"good\" predictor for the corresponding value of `y`. (Document 4, page 7)\n    *   This function `h` is called a hypothesis. (Document 4, page 7)\n\n*   **Training Set:**\n    *   A training set is a list of `n` training examples `{(x(i), y(i)); i = 1,...,n}`. (Document 4, page 7)\n    *   The superscript `(i)` is an index into the training set and does not denote exponentiation. (Document 4, page 7)\n\n*   **Types of Supervised Learning Problems:**\n    *   **Regression Problem:** This occurs when the target variable `y` that you are trying to predict is continuous. (Document 4, page 7)\n        *   *Example:* Predicting the price of a house based on living area and number of bedrooms. (Document 1, page 1; Document 4, page 7) In this example, `x` could be a two-dimensional vector representing living area and number of bedrooms, and `y` would be the price. (Document 1, page 1)\n        *   A linear function `h\u03b8(x) = \u03b80 + \u03b81x1 + \u03b82x2` can be used to approximate `y`, where `\u03b8i` are parameters. (Document 1, page 1)\n    *   **Classification Problem:** This occurs when `y` can take on only a small number of discrete values. (Document 4, page 7)\n        *   *Example:* Predicting if a dwelling is a house or an apartment. (Document 1, page 1; Document 4, page 7)\n        *   Another example is distinguishing between elephants (`y=1`) and dogs (`y=0`) based on animal features. (Document 2, page 4)\n        *   Algorithms like logistic regression or the perceptron algorithm try to find a decision boundary (e.g., a straight line)",
+        "timestamp": "2025-12-08T18:00:06.494954"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI answer was unclear or insufficient",
+    "created_at": "2025-12-08T18:00:06.499440",
+    "updated_at": "2025-12-08T18:00:06.499440",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "5082c535-eea9-4b0a-8b02-509968e301fe",
+    "student_id": "STUDENT_001",
+    "question": "Hey, I wanted some money for my tuition class.",
+    "ai_response": "I don't have that information in the available documents. The provided documents appear to be related to quantitative data types and operations, not financial aid or tuition assistance.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "Hey, I wanted some money for my tuition class.",
+        "timestamp": "2025-12-08T20:57:28.046583"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents appear to be related to quantitative data types and operations, not financial aid or tuition assistance.",
+        "timestamp": "2025-12-08T20:57:28.046583"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The student is asking for financial assistance, and the AI found no relevant documents and provided a generic response, indicating a need for human guidance on this sensitive topic.",
+    "created_at": "2025-12-08T20:57:28.046583",
+    "updated_at": "2025-12-08T20:57:28.046583",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "46978e0b-fd75-4d9e-9216-50474eb06e8f",
+    "student_id": "STUDENT_001",
+    "question": "Hey, I wanted some money for my tuition class.",
+    "ai_response": "I don't have that information in the available documents. The provided documents appear to be related to quantitative data types and operations, not financial aid or tuition assistance.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "What is the difference between quantization and supervised learning?",
+        "timestamp": "2025-12-08T20:58:35.077829"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the provided documents, here's the difference between quantization and supervised learning:\n\n**Quantization:**\n\n*   **Definition:** Quantization involves reducing the bit-width of neural network parameters and activations. This can be done through techniques like post-training quantization (PTQ) or quantization-aware training (QAT). (Document 1: quant.pdf, page 1; Document 5: quant.pdf, page 1)\n*   **Purpose:** The goal of quantization is often to optimize neural networks for deployment on hardware, potentially leading to faster inference and reduced memory footprint. (Document 5: quant.pdf, page 1)\n*   **Methods:**\n    *   **Post-training quantization (PTQ):** These techniques are effective and fast to implement as they don't require retraining the network with labeled data. However, they may have limitations, especially for low-bit quantization (e.g., 4-bit and below). (Document 1: quant.pdf, page 1)\n    *   **Quantization-aware training (QAT):** This method models the quantization noise during training, allowing the model to find more optimal solutions than PTQ. It generally leads to higher accuracy for low-bit quantization but requires longer training times, labeled data, and hyper-parameter search. (Document 1: quant.pdf, page 1; Document 5: quant.pdf, page 1)\n*   **Technical Details:** Quantization involves concepts like integer grid limits, gradients for back-propagation through quantization blocks, and learnable quantization parameters. (Document 4: quant.pdf, page 1; Document 3: quant.pdf, page 1)\n\n**Supervised Learning:**\n\n*   **Definition:** Supervised learning is a type of machine learning where the model learns from a dataset containing input-output pairs (labeled data). (Document 2: cs229.pdf, page 1)\n*   **Purpose:** The objective is to predict an output based on given inputs.\n*   **Example:** The provided context illustrates supervised learning with a housing example where the goal is to predict the price of a house (output) based on features like living area and number of bedrooms (inputs). If the output is categorical (e.g., house or apartment), it's called a classification problem. (Document 2: cs229.pdf, page 1)\n*   **Hypothesis/Model:** In supervised learning, a function or hypothesis (e.g., a linear function like `h\u03b8(x) = \u03b80 + \u03b81x1 + \u03b82x2`) is used to approximate the relationship between inputs and outputs. The `\u03b8i` values are the parameters of this hypothesis. (Document 2: cs229.pdf, page 1)\n*   **Feature Selection:** Deciding which features to include in the dataset (e.g., living area, number of bedrooms, whether a house has a fireplace) is an important part of designing a supervised learning problem. (Document 2: cs229.pdf, page 1)\n\nIn summary, **quantization** is a technique applied to neural networks, often after or during their training, to optimize their efficiency and performance on specific hardware by reducing bit-width. **Supervised learning** is a broader machine learning paradigm where a model learns to map inputs to outputs using labeled data. While QAT (a quantization method) involves training, it's a specific optimization technique within the context of neural networks, whereas supervised learning defines the general problem of learning from labeled examples.",
+        "timestamp": "2025-12-08T20:58:35.077864"
+      },
+      {
+        "role": "user",
+        "content": "Hey, I wanted some money for my tuition class.",
+        "timestamp": "2025-12-08T20:58:35.077871"
+      },
+      {
+        "role": "user",
+        "content": "Hey, I wanted some money for my tuition class.",
+        "timestamp": "2025-12-08T20:58:35.077873"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents appear to be related to quantitative data types and operations, not financial aid or tuition assistance.",
+        "timestamp": "2025-12-08T20:58:35.077875"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "AI answer was unclear or insufficient",
+    "created_at": "2025-12-08T20:58:35.083267",
+    "updated_at": "2025-12-08T20:58:35.083267",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "82aa0b07-82ca-4303-8788-1f4777d1298e",
+    "student_id": "STUDENT_001",
+    "question": "What is the difference between quantization and supervised learning?",
+    "ai_response": "Based on the provided documents, here's the difference between quantization and supervised learning:\n\n**Quantization:**\n\n*   **Definition:** Quantization involves reducing the bit-width of neural network parameters and activations. This can be done through techniques like post-training quantization (PTQ) or quantization-aware training (QAT). (quant.pdf, page 1, id 1; quant.pdf, page 1, id 5)\n*   **Purpose:** The goal of quantization is often to enable neural networks to run on fixed-point accelerators (quant.pdf, page 1, id 5) and to mitigate large quantization errors, especially for low-bit quantization (e.g., 4-bit and below). (quant.pdf, page 1, id 1)\n*   **Methods:**\n    *   **Post-training quantization (PTQ):** These techniques are effective and fast to implement as they don't require retraining with labeled data. However, they have limitations for low-bit quantization. (quant.pdf, page 1, id 1)\n    *   **Quantization-aware training (QAT):** This method models quantization noise during training, allowing the model to find more optimal solutions than PTQ. It involves retraining neural networks with simulated quantization in the training pipeline. While it offers higher accuracy, it comes with costs like longer training times, the need for labeled data, and hyper-parameter search. (quant.pdf, page 1, id 1; quant.pdf, page 1, id 5)\n*   **Technical Aspects:** Quantization involves concepts like learnable quantization parameters, layer-wise Mean Squared Error (MSE) based criteria, and back-propagation through quantization blocks using the Straight-Through Estimator (STE) assumption. (quant.pdf, page 1, id 3; quant.pdf, page 1, id 4)\n\n**Supervised Learning:**\n\n*   **Definition:** Supervised learning is a type of machine learning where the goal is to predict an output based on given input data. (cs229.pdf, page 1, id 2)\n*   **Example:** The provided context illustrates supervised learning with a housing example where the goal is to predict the price of a house based on features like living area and number of bedrooms. If the output is a continuous value (like price), it's a regression problem. If the output is a category (like \"house\" or \"apartment\"), it's a classification problem. (cs229.pdf, page 1, id 2)\n*   **Process:** To perform supervised learning, one must decide how to represent functions or hypotheses (e.g., `h\u03b8(x) = \u03b80 + \u03b81x1 + \u03b82x2` for linear regression) in a computer. The `\u03b8i` values are the parameters that are learned during the training process. (cs229.pdf, page 1, id 2)\n*   **Data:** Supervised learning requires a dataset with known inputs (features, `x`) and corresponding outputs (labels, `y`). (cs229.pdf, page 1, id 2)\n\n**Key Difference:**\n\nThe core difference is their purpose and scope:\n\n*   **Supervised learning** is a broad machine learning paradigm focused on learning a mapping from inputs to outputs using labeled data.\n*   **Quantization** is a technique applied *within* neural networks (which can be trained using supervised learning) to optimize their efficiency and performance, particularly for deployment on specific hardware, by reducing the precision of their numerical representations. QAT, a form of quantization, *uses* supervised learning principles (retraining with labeled data) to achieve its goals.",
+    "conversation_history": [
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents appear to be related to quantitative data types and operations, not financial aid or tuition assistance.",
+        "timestamp": "2025-12-08T21:12:39.687731"
+      },
+      {
+        "role": "user",
+        "content": "Hey, I wanted some money for my tuition class.",
+        "timestamp": "2025-12-08T21:12:39.687739"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents appear to be related to quantitative data types and operations, not financial aid or tuition assistance.",
+        "timestamp": "2025-12-08T21:12:39.687740"
+      },
+      {
+        "role": "user",
+        "content": "What is the difference between quantization and supervised learning?",
+        "timestamp": "2025-12-08T21:12:39.687741"
+      },
+      {
+        "role": "user",
+        "content": "What is the difference between quantization and supervised learning?",
+        "timestamp": "2025-12-08T21:12:39.687742"
+      },
+      {
+        "role": "assistant",
+        "content": "Based on the provided documents, here's the difference between quantization and supervised learning:\n\n**Quantization:**\n\n*   **Definition:** Quantization involves reducing the bit-width of neural network parameters and activations. This can be done through techniques like post-training quantization (PTQ) or quantization-aware training (QAT). (quant.pdf, page 1, id 1; quant.pdf, page 1, id 5)\n*   **Purpose:** The goal of quantization is often to enable neural networks to run on fixed-point accelerators (quant.pdf, page 1, id 5) and to mitigate large quantization errors, especially for low-bit quantization (e.g., 4-bit and below). (quant.pdf, page 1, id 1)\n*   **Methods:**\n    *   **Post-training quantization (PTQ):** These techniques are effective and fast to implement as they don't require retraining with labeled data. However, they have limitations for low-bit quantization. (quant.pdf, page 1, id 1)\n    *   **Quantization-aware training (QAT):** This method models quantization noise during training, allowing the model to find more optimal solutions than PTQ. It involves retraining neural networks with simulated quantization in the training pipeline. While it offers higher accuracy, it comes with costs like longer training times, the need for labeled data, and hyper-parameter search. (quant.pdf, page 1, id 1; quant.pdf, page 1, id 5)\n*   **Technical Aspects:** Quantization involves concepts like learnable quantization parameters, layer-wise Mean Squared Error (MSE) based criteria, and back-propagation through quantization blocks using the Straight-Through Estimator (STE) assumption. (quant.pdf, page 1, id 3; quant.pdf, page 1, id 4)\n\n**Supervised Learning:**\n\n*   **Definition:** Supervised learning is a type of machine learning where the goal is to predict an output based on given input data. (cs229.pdf, page 1, id 2)\n*   **Example:** The provided context illustrates supervised learning with a housing example where the goal is to predict the price of a house based on features like living area and number of bedrooms. If the output is a continuous value (like price), it's a regression problem. If the output is a category (like \"house\" or \"apartment\"), it's a classification problem. (cs229.pdf, page 1, id 2)\n*   **Process:** To perform supervised learning, one must decide how to represent functions or hypotheses (e.g., `h\u03b8(x) = \u03b80 + \u03b81x1 + \u03b82x2` for linear regression) in a computer. The `\u03b8i` values are the parameters that are learned during the training process. (cs229.pdf, page 1, id 2)\n*   **Data:** Supervised learning requires a dataset with known inputs (features, `x`) and corresponding outputs (labels, `y`). (cs229.pdf, page 1, id 2)\n\n**Key Difference:**\n\nThe core difference is their purpose and scope:\n\n*   **Supervised learning** is a broad machine learning paradigm focused on learning a mapping from inputs to outputs using labeled data.\n*   **Quantization** is a technique applied *within* neural networks (which can be trained using supervised learning) to optimize their efficiency and performance, particularly for deployment on specific hardware, by reducing the precision of their numerical representations. QAT, a form of quantization, *uses* supervised learning principles (retraining with labeled data) to achieve its goals.",
+        "timestamp": "2025-12-08T21:12:39.687743"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "Academic difficulty or failing course | Notes: Manish Sharma, 8th dec",
+    "created_at": "2025-12-08T21:12:39.689646",
+    "updated_at": "2025-12-08T21:12:39.689646",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "d4d85086-a11a-4fab-a3e0-e681cef332aa",
+    "student_id": "STUDENT_001",
+    "question": "Hey, I am interested in mathematics and statistics, and I feel that I can crunch numbers very good. Can you please tell me some new courses  where I can excel in based on SUNY's academic?",
+    "ai_response": "I don't have that information in the available documents. The provided documents are research papers on machine learning topics (e.g., Gaussian distributions, Naive Bayes, Generalized Linear Models, logistic functions) and do not contain information about SUNY's academic courses or programs. Therefore, I cannot recommend specific courses where you might excel based on your interest in mathematics and statistics.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "Hey, I am interested in mathematics and statistics, and I feel that I can crunch numbers very good. Can you please tell me some new courses  where I can excel in based on SUNY's academic?",
+        "timestamp": "2025-12-08T21:23:01.616632"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents are research papers on machine learning topics (e.g., Gaussian distributions, Naive Bayes, Generalized Linear Models, logistic functions) and do not contain information about SUNY's academic courses or programs. Therefore, I cannot recommend specific courses where you might excel based on your interest in mathematics and statistics.",
+        "timestamp": "2025-12-08T21:23:01.616632"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI failed to provide relevant information about SUNY courses and defaulted to a generic response, indicating a lack of understanding of the student's request.",
+    "created_at": "2025-12-08T21:23:01.616632",
+    "updated_at": "2025-12-08T21:23:01.616632",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "7178fb5e-661d-419a-b2fd-97034420a434",
+    "student_id": "STUDENT_001",
+    "question": "Hey, I am interested in mathematics and statistics, and I feel that I can crunch numbers very good. Can you please tell me some new courses  where I can excel in based on SUNY's academic?",
+    "ai_response": "I don't have that information in the available documents. The provided documents are research papers on machine learning topics (e.g., Gaussian distributions, Naive Bayes, Generalized Linear Models, logistic functions) and do not contain information about SUNY's academic courses or programs. Therefore, I cannot recommend specific courses where you might excel based on your interest in mathematics and statistics.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "Hey, I am interested in mathematics and statistics, and I feel that I can crunch numbers very good. Can you please tell me some new courses  where I can excel in based on SUNY's academic?",
+        "timestamp": "2025-12-08T21:23:02.866840"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents are research papers on machine learning topics (e.g., Gaussian distributions, Naive Bayes, Generalized Linear Models, logistic functions) and do not contain information about SUNY's academic courses or programs. Therefore, I cannot recommend specific courses where you might excel based on your interest in mathematics and statistics.",
+        "timestamp": "2025-12-08T21:23:02.866840"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI failed to provide any relevant information about SUNY courses and explicitly stated it couldn't answer the student's question based on the available documents, indicating a lack of helpfulness.",
+    "created_at": "2025-12-08T21:23:02.866840",
+    "updated_at": "2025-12-08T21:23:02.866840",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "b108b194-255a-4f13-9238-b5c58dc02f5a",
+    "student_id": "STUDENT_001",
+    "question": "What is the difference between supervised and unsupervised learning?",
+    "ai_response": "I don't have that information in the available documents. The provided texts discuss supervised learning, regression problems, classification problems, and generative learning algorithms, but they do not define or differentiate between supervised and unsupervised learning.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "What is the difference between supervised and unsupervised learning?",
+        "timestamp": "2025-12-08T23:31:18.624527"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided texts discuss supervised learning, regression problems, classification problems, and generative learning algorithms, but they do not define or differentiate between supervised and unsupervised learning.",
+        "timestamp": "2025-12-08T23:31:18.624527"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI explicitly stated it lacked the information requested and found no relevant documents, indicating it cannot fulfill the student's query.",
+    "created_at": "2025-12-08T23:31:18.624527",
+    "updated_at": "2025-12-08T23:31:18.624527",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
+  },
+  {
+    "id": "2dd47384-922f-4f0f-8e2d-d03b22760fa7",
+    "student_id": "STUDENT_001",
+    "question": "Hey can you tell me the difference between supervised and quantization",
+    "ai_response": "I cannot provide a detailed answer on the difference between supervised learning and quantization based on the provided context. The documents discuss \"quantization-aware training\" and \"post-training quantization\" but do not define or explain \"supervised learning\" or compare it to quantization.\n\nIf you would like to know more about quantization based on the provided documents, please ask a more specific question.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "Hey can you tell me the difference between supervised and quantization",
+        "timestamp": "2025-12-08T23:39:53.702225"
+      },
+      {
+        "role": "assistant",
+        "content": "I cannot provide a detailed answer on the difference between supervised learning and quantization based on the provided context. The documents discuss \"quantization-aware training\" and \"post-training quantization\" but do not define or explain \"supervised learning\" or compare it to quantization.\n\nIf you would like to know more about quantization based on the provided documents, please ask a more specific question.",
+        "timestamp": "2025-12-08T23:39:53.702225"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI\u2019s response indicates a lack of knowledge on a fundamental concept (supervised learning) and fails to provide any relevant information, necessitating human advisor intervention.",
+    "created_at": "2025-12-08T23:39:53.702225",
+    "updated_at": "2025-12-08T23:39:53.702225",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
   }
 ]

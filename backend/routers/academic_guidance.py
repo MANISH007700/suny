@@ -1,10 +1,14 @@
 # routers/academic_guidance.py
-from fastapi import APIRouter, HTTPException
-from utils.schema import ChatRequest, ChatResponse, InitRequest, InitResponse
+from fastapi import APIRouter, HTTPException, File, UploadFile
+from utils.schema import ChatRequest, ChatResponse, InitRequest, InitResponse, AudioTranscriptionResponse
 from models.rag_pipeline import RAGPipeline
 import logging
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+import os
+import requests
+from dotenv import load_dotenv
+import base64
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -288,3 +292,104 @@ async def test_retrieval(request: dict):
     except Exception as e:
         logger.error(f"Test retrieval error: {e}", exc_info=True)
         return {"error": str(e)}
+
+@router.post("/transcribe-audio", response_model=AudioTranscriptionResponse)
+async def transcribe_audio(audio_file: UploadFile = File(...)):
+    """
+    Transcribe audio file to text using OpenRouter's Gemini 2.5 Flash model with audio support.
+    Accepts audio files in various formats (mp3, wav, ogg, webm, etc.)
+    """
+    try:
+        logger.info(f"Received audio file: {audio_file.filename}, content_type: {audio_file.content_type}")
+        
+        # Read audio file
+        audio_bytes = await audio_file.read()
+        logger.info(f"Audio file size: {len(audio_bytes)} bytes")
+        
+        # Load API key
+        load_dotenv(override=True)
+        api_key = os.getenv("OPENROUTER_API_KEY")
+        
+        if not api_key:
+            raise HTTPException(status_code=500, detail="OPENROUTER_API_KEY not configured")
+        
+        # Convert audio to base64
+        audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
+        
+        # Determine MIME type
+        content_type = audio_file.content_type
+        if not content_type or content_type == "application/octet-stream":
+            # Guess from filename
+            ext = audio_file.filename.split('.')[-1].lower() if '.' in audio_file.filename else 'webm'
+            mime_types = {
+                'mp3': 'audio/mpeg',
+                'wav': 'audio/wav',
+                'ogg': 'audio/ogg',
+                'webm': 'audio/webm',
+                'm4a': 'audio/mp4',
+                'flac': 'audio/flac'
+            }
+            content_type = mime_types.get(ext, 'audio/webm')
+        
+        # Use Gemini 2.5 Flash Preview (supports audio input)
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": os.getenv("APP_BASE_URL", "http://localhost:8501"),
+            "X-Title": "SUNY Academic Guidance System"
+        }
+        
+        # Build request payload with audio content
+        payload = {
+            "model": "google/gemini-2.5-flash-preview-09-2025",  # Model with audio support
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Please transcribe the following audio accurately. Provide only the transcribed text without any additional commentary or formatting."
+                        },
+                        {
+                            "type": "input_audio",
+                            "input_audio": {
+                                "data": audio_base64,
+                                "format": content_type.split('/')[-1] if '/' in content_type else "webm"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 500,
+            "temperature": 0.1
+        }
+        
+        logger.info("Sending audio transcription request to OpenRouter...")
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        
+        if response.status_code != 200:
+            error_msg = f"OpenRouter API error: {response.status_code} - {response.text}"
+            logger.error(error_msg)
+            raise HTTPException(status_code=response.status_code, detail=error_msg)
+        
+        data = response.json()
+        transcribed_text = data['choices'][0]['message']['content'].strip()
+        
+        logger.info(f"Successfully transcribed audio: {transcribed_text[:100]}...")
+        
+        return AudioTranscriptionResponse(
+            text=transcribed_text,
+            success=True,
+            error=None
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Audio transcription error: {e}", exc_info=True)
+        return AudioTranscriptionResponse(
+            text="",
+            success=False,
+            error=str(e)
+        )
