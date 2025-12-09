@@ -1110,12 +1110,19 @@ if tab3 and st.session_state.user_mode == "Advisor":
                             action_col1, action_col2 = st.columns(2)
                             
                             with action_col1:
-                                new_status = st.selectbox(
+                                status_options = ["pending", "in_progress", "resolved", "closed"]
+                                status_display = ["PENDING", "IN_PROGRESS", "RESOLVED", "CLOSED"]
+                                current_status = esc.get("status", "pending")
+                                current_index = status_options.index(current_status) if current_status in status_options else 0
+                                
+                                new_status_display = st.selectbox(
                                     "Update Status",
-                                    ["pending", "in_progress", "resolved", "closed"],
-                                    index=["pending", "in_progress", "resolved", "closed"].index(esc.get("status", "pending")),
+                                    status_display,
+                                    index=current_index,
                                     key=f"status_{esc['id']}"
                                 )
+                                # Convert back to lowercase for backend
+                                new_status = status_options[status_display.index(new_status_display)]
                             
                             with action_col2:
                                 new_priority = st.selectbox(
