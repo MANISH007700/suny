@@ -949,11 +949,16 @@ if tab3 and st.session_state.user_mode == "Advisor":
         # Filters
         col1, col2, col3 = st.columns(3)
         with col1:
-            filter_status = st.selectbox(
+            status_filter_options = ["All", "pending", "in_progress", "resolved"]
+            status_filter_display = ["ALL", "PENDING", "IN_PROGRESS", "RESOLVED"]
+            
+            filter_status_display = st.selectbox(
                 "Filter by Status",
-                ["All", "pending", "in_progress", "resolved"],
+                status_filter_display,
                 key="filter_status"
             )
+            # Convert back to original format for API
+            filter_status = status_filter_options[status_filter_display.index(filter_status_display)]
         with col2:
             filter_priority = st.slider("Min Priority", 1, 5, 1, key="filter_priority")
         with col3:

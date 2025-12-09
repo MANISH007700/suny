@@ -903,5 +903,30 @@
     "advisor_notes": [],
     "assigned_to": null,
     "priority": 2
+  },
+  {
+    "id": "236b01ea-5750-482c-a821-a409b645b4ae",
+    "student_id": "STUDENT_001",
+    "question": "Hey I wanted some cash for my tuition fees",
+    "ai_response": "I don't have that information in the available documents. The provided documents appear to be related to quantitative analysis or a similar technical subject, containing mathematical expressions and symbols rather than information about tuition fees or financial aid.",
+    "conversation_history": [
+      {
+        "role": "user",
+        "content": "Hey I wanted some cash for my tuition fees",
+        "timestamp": "2025-12-09T14:59:20.971366"
+      },
+      {
+        "role": "assistant",
+        "content": "I don't have that information in the available documents. The provided documents appear to be related to quantitative analysis or a similar technical subject, containing mathematical expressions and symbols rather than information about tuition fees or financial aid.",
+        "timestamp": "2025-12-09T14:59:20.971366"
+      }
+    ],
+    "status": "pending",
+    "escalation_reason": "The AI response indicates a lack of information regarding tuition fees and no relevant documents were found, suggesting it cannot assist the student's request, and the topic is sensitive (financial aid).",
+    "created_at": "2025-12-09T14:59:20.971366",
+    "updated_at": "2025-12-09T14:59:20.971366",
+    "advisor_notes": [],
+    "assigned_to": null,
+    "priority": 2
   }
 ]
