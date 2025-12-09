@@ -542,7 +542,7 @@ def get_main_styles():
     /* === Admin Mode Banner === */
     .admin-banner {
         background: linear-gradient(135deg, #0A1E44 0%, #1D4ED8 100%);
-        color: #FFFFFF;
+        color: #FFFFFF !important;
         padding: 1rem 2rem;
         border-radius: 12px;
         margin-bottom: 2rem;
@@ -550,6 +550,14 @@ def get_main_styles():
         align-items: center;
         justify-content: space-between;
         box-shadow: 0 4px 12px rgba(10, 30, 68, 0.2);
+    }
+    
+    .admin-banner h1,
+    .admin-banner h2,
+    .admin-banner h3,
+    .admin-banner h4,
+    .admin-banner p {
+        color: #FFFFFF !important;
     }
     
     /* === Risk Level Indicators === */

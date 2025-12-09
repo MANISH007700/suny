@@ -58,7 +58,7 @@ st.markdown(get_main_styles(), unsafe_allow_html=True)
 for key in ['messages', 'citations', 'initialized', 'auto_init_done', 'study_materials', 
             'student_id', 'selected_escalation', 'user_mode', 'show_escalation_form',
             'last_question', 'last_answer', 'last_escalation_id', 'transcribed_text',
-            'show_audio_input', 'show_platform_connection']:
+            'show_audio_input', 'show_platform_connection', 'authenticated', 'user_email', 'user_name']:
     if key not in st.session_state:
         if key in ['messages', 'citations', 'study_materials']:
             st.session_state[key] = []
@@ -68,12 +68,44 @@ for key in ['messages', 'citations', 'initialized', 'auto_init_done', 'study_mat
             st.session_state[key] = "Student"  # Default mode: Student, Advisor, or Administrator
         elif key in ['show_escalation_form', 'show_audio_input']:
             st.session_state[key] = False
-        elif key in ['last_question', 'last_answer', 'transcribed_text']:
+        elif key in ['last_question', 'last_answer', 'transcribed_text', 'user_email', 'user_name']:
             st.session_state[key] = ""
         elif key in ['last_escalation_id', 'show_platform_connection']:
             st.session_state[key] = None
+        elif key == 'authenticated':
+            st.session_state[key] = False
         else:
             st.session_state[key] = False
+
+# === Authentication Functions ===
+def validate_suny_email(email):
+    """Validate if email is a SUNY email"""
+    suny_domains = ['@suny.edu', '@stonybrook.edu', '@buffalo.edu', '@albany.edu', 
+                    '@binghamton.edu', '@oswego.edu', '@cortland.edu', '@oneonta.edu',
+                    '@plattsburgh.edu', '@potsdam.edu', '@newpaltz.edu', '@geneseo.edu']
+    return any(email.lower().endswith(domain) for domain in suny_domains)
+
+def authenticate_user(email, password, name):
+    """Simple authentication - in production, this would verify against a database"""
+    # For demo purposes, accept any SUNY email with password length > 6
+    if validate_suny_email(email) and len(password) >= 6:
+        st.session_state.authenticated = True
+        st.session_state.user_email = email
+        st.session_state.user_name = name
+        # Extract student ID from email (before @)
+        st.session_state.student_id = email.split('@')[0].upper()
+        return True
+    return False
+
+def logout():
+    """Logout user"""
+    st.session_state.authenticated = False
+    st.session_state.user_email = ""
+    st.session_state.user_name = ""
+    st.session_state.student_id = "STUDENT_001"
+    st.session_state.messages = []
+    st.session_state.citations = []
+    st.rerun()
 
 # === Helper Functions ===
 def check_health(): 
@@ -169,11 +201,180 @@ if not st.session_state.auto_init_done:
     else:
         st.error("❌ Backend is offline. Please start the FastAPI server.")
 
+# === LOGIN PAGE ===
+if not st.session_state.authenticated:
+    st.markdown("""
+    <style>
+    .login-container {
+        max-width: 500px;
+        margin: 100px auto;
+        padding: 3rem;
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(30, 58, 138, 0.4);
+    }
+    .login-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .login-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: white !important;
+    }
+    .login-header p {
+        font-size: 1.1rem;
+        color: #cbd5e1;
+    }
+    .stTextInput > div > div > input {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+    .stTextInput > div > div > input:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+    }
+    .stTextInput > label {
+        color: white !important;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Center the login form
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown("""
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🎓 SUNY Academic Assistant</h1>
+                <p>Sign in with your SUNY credentials</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Login form
+        with st.form("login_form", clear_on_submit=False):
+            st.markdown("### 🔐 Login")
+            
+            name = st.text_input(
+                "Full Name",
+                placeholder="John Doe",
+                key="login_name"
+            )
+            
+            email = st.text_input(
+                "SUNY Email Address",
+                placeholder="student@suny.edu",
+                key="login_email"
+            )
+            
+            password = st.text_input(
+                "Password",
+                type="password",
+                placeholder="Enter your password",
+                key="login_password"
+            )
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            col_btn1, col_btn2 = st.columns(2)
+            
+            with col_btn1:
+                login_button = st.form_submit_button(
+                    "🚀 Sign In",
+                    use_container_width=True,
+                    type="primary"
+                )
+            
+            with col_btn2:
+                demo_button = st.form_submit_button(
+                    "👤 Demo Login",
+                    use_container_width=True
+                )
+            
+            if login_button:
+                if not name:
+                    st.error("❌ Please enter your name")
+                elif not email:
+                    st.error("❌ Please enter your email")
+                elif not password:
+                    st.error("❌ Please enter your password")
+                elif not validate_suny_email(email):
+                    st.error("❌ Please use a valid SUNY email address")
+                    st.info("Valid domains: @suny.edu, @stonybrook.edu, @buffalo.edu, @albany.edu, etc.")
+                elif len(password) < 6:
+                    st.error("❌ Password must be at least 6 characters")
+                else:
+                    if authenticate_user(email, password, name):
+                        st.success(f"✅ Welcome, {name}!")
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error("❌ Invalid credentials")
+            
+            if demo_button:
+                # Auto-login with demo credentials
+                if authenticate_user("demo.student@suny.edu", "demo123", "Demo Student"):
+                    st.success("✅ Logged in as Demo Student!")
+                    time.sleep(1)
+                    st.rerun()
+        
+        # Additional info
+        st.markdown("---")
+        st.markdown("""
+        <div style="text-align: center; color: #64748b; font-size: 0.9rem;">
+            <p>🔒 Your information is secure and encrypted</p>
+            <p>📧 Use your official SUNY email address</p>
+            <p style="margin-top: 1rem;">
+                <strong>Demo Credentials:</strong><br>
+                Email: demo.student@suny.edu<br>
+                Password: demo123
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Stop execution if not authenticated
+    st.stop()
+
 # === Sidebar ===
 with st.sidebar:
     st.markdown("# 📚 SUNY Academic Assistant")
     st.markdown("<small style='color: #E5E7EB;'>RAG + Study Tools + Analytics</small>", unsafe_allow_html=True)
     st.markdown("---")
+    
+    # User Info Card
+    if st.session_state.authenticated:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); 
+                    padding: 1rem; border-radius: 12px; margin-bottom: 1rem;
+                    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);">
+            <div style="color: white;">
+                <p style="margin: 0; font-size: 0.85rem; color: #cbd5e1;">Logged in as</p>
+                <p style="margin: 0.25rem 0; font-size: 1.1rem; font-weight: 600;">
+                    {st.session_state.user_name}
+                </p>
+                <p style="margin: 0; font-size: 0.8rem; color: #93c5fd;">
+                    📧 {st.session_state.user_email}
+                </p>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: #fbbf24;">
+                    🆔 {st.session_state.student_id}
+                </p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("🚪 Logout", use_container_width=True, type="secondary"):
+            logout()
+        
+        st.markdown("---")
     
     # Mode toggle
     st.markdown("### 👤 User Mode")
@@ -193,12 +394,10 @@ with st.sidebar:
     st.session_state.user_mode = mode_map[mode]
     
     if st.session_state.user_mode == "Student":
-        # Student mode: show student ID input
-        st.session_state.student_id = st.text_input(
-            "Student ID",
-            value=st.session_state.get("student_id", "STUDENT_001"),
-            key="student_id_input"
-        )
+        # Student mode: show student ID (auto-populated from login)
+        st.markdown("### 🆔 Student ID")
+        st.info(f"**{st.session_state.student_id}** (from your email)")
+        st.markdown("<small style='color: #64748b;'>Your ID is automatically extracted from your SUNY email</small>", unsafe_allow_html=True)
     
     st.markdown("---")
 
@@ -325,10 +524,10 @@ if tab1:
             esc_id = st.session_state.last_escalation_id
             st.markdown(f"""
             <div class="escalation-notice">
-                <h4 style="color:#5eead4; margin:0 0 0.5rem 0;">🎯 Question Auto-Escalated to Human Advisor</h4>
-                <p style="color:#e2e8f0; margin:0;">Your question has been automatically flagged for human review to ensure you get the best possible assistance.</p>
-                <p style="color:#94a3b8; font-size:0.9rem; margin:0.5rem 0 0 0;">📋 Escalation ID: <code>{esc_id[:8]}...</code></p>
-                <p style="color:#10b981; font-weight:600; margin:0.5rem 0 0 0;">✅ An advisor will review this shortly and reach out to you.</p>
+                <h4 style="color:#1e3a8a; margin:0 0 0.5rem 0; font-weight:700;">🎯 Question Auto-Escalated to Human Advisor</h4>
+                <p style="color:#1e293b; margin:0; font-size:1rem;">Your question has been automatically flagged for human review to ensure you get the best possible assistance.</p>
+                <p style="color:#475569; font-size:0.9rem; margin:0.5rem 0 0 0;">📋 Escalation ID: <code style="background:#dbeafe; padding:0.25rem 0.5rem; border-radius:4px; color:#1e40af;">{esc_id[:8]}...</code></p>
+                <p style="color:#047857; font-weight:600; margin:0.5rem 0 0 0; font-size:1rem;">✅ An advisor will review this shortly and reach out to you.</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -564,11 +763,11 @@ if tab1:
                             esc_id = create_resp.json().get("id", "")
                             st.markdown(f"""
                             <div class="escalation-notice">
-                                <h4 style="color:#5eead4; margin:0 0 0.5rem 0;">✅ Escalation Submitted Successfully!</h4>
-                                <p style="color:#e2e8f0; margin:0;">Your question has been sent to a human advisor for personalized assistance.</p>
-                                <p style="color:#94a3b8; font-size:0.9rem; margin:0.5rem 0 0 0;">📋 Escalation ID: <code>{esc_id[:8]}...</code></p>
-                                <p style="color:#10b981; font-weight:600; margin:0.5rem 0 0 0;">🎯 Priority: {'⭐' * priority_level}</p>
-                                <p style="color:#5eead4; margin:0.5rem 0 0 0;">An advisor will review your question and contact you soon!</p>
+                                <h4 style="color:#1e3a8a; margin:0 0 0.5rem 0; font-weight:700;">✅ Escalation Submitted Successfully!</h4>
+                                <p style="color:#1e293b; margin:0; font-size:1rem;">Your question has been sent to a human advisor for personalized assistance.</p>
+                                <p style="color:#475569; font-size:0.9rem; margin:0.5rem 0 0 0;">📋 Escalation ID: <code style="background:#dbeafe; padding:0.25rem 0.5rem; border-radius:4px; color:#1e40af;">{esc_id[:8]}...</code></p>
+                                <p style="color:#1e40af; font-weight:600; margin:0.5rem 0 0 0; font-size:1rem;">🎯 Priority: {'⭐' * priority_level}</p>
+                                <p style="color:#047857; margin:0.5rem 0 0 0; font-size:1rem; font-weight:600;">An advisor will review your question and contact you soon!</p>
                             </div>
                             """, unsafe_allow_html=True)
                             st.session_state.show_escalation_form = False
@@ -1340,8 +1539,8 @@ if tab_admin and st.session_state.user_mode == "Administrator":
         st.markdown("""
         <div class="admin-banner">
             <div>
-                <h1 style="margin:0; color:#E5E7EB;">📊 Administrator Analytics Dashboard</h1>
-                <p style="margin:0; color:#E5E7EB;">Comprehensive system insights and student behavior analytics</p>
+                <h1 style="margin:0; color:#FFFFFF !important;">📊 Administrator Analytics Dashboard</h1>
+                <p style="margin:0; color:#FFFFFF !important;">Comprehensive system insights and student behavior analytics</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1383,6 +1582,8 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 st.metric(
                     "Total Questions",
                     f"{total_questions:,}",
+                    delta=" ",
+                    delta_color="off",
                     help="Total number of student questions asked"
                 )
             
@@ -1390,6 +1591,8 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 st.metric(
                     "Active Users",
                     f"{active_users}",
+                    delta=" ",
+                    delta_color="off",
                     help="Unique students who have used the system"
                 )
             
@@ -1397,6 +1600,8 @@ if tab_admin and st.session_state.user_mode == "Administrator":
                 st.metric(
                     "Weekly Active",
                     f"{daily_active}",
+                    delta=" ",
+                    delta_color="off",
                     help="Active students in the last 7 days"
                 )
             
@@ -2077,8 +2282,8 @@ if tab_admin and st.session_state.user_mode == "Administrator":
         st.markdown("---")
         
         # SUNY Platform Connections Section
-        st.markdown("### 🔗 Connect to SUNY Data Sources")
-        st.markdown("Integrate existing SUNY platforms, libraries, and archives directly with your AI knowledge base")
+        st.markdown('<h3 style="color: #FFFFFF !important;">🔗 Connect to SUNY Data Sources</h3>', unsafe_allow_html=True)
+        st.markdown('<p style="color: #FFFFFF !important;">Integrate existing SUNY platforms, libraries, and archives directly with your AI knowledge base</p>', unsafe_allow_html=True)
         
         # Platform connection buttons
         col1, col2, col3 = st.columns(3)

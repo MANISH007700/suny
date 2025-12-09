@@ -31,5 +31,16 @@
     "risk_level": "low",
     "total_escalations": 1,
     "last_interaction": "2025-12-05T01:06:06.468006"
+  },
+  "MANISH": {
+    "student_id": "MANISH",
+    "name": "Student MANISH",
+    "major": "-",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
+    "risk_level": "low",
+    "total_escalations": 0,
+    "last_interaction": "2025-12-09T15:44:21.423320"
   }
 }
