@@ -39,8 +39,52 @@
     "gpa": null,
     "completed_courses": [],
     "current_courses": [],
+    "risk_level": "medium",
+    "total_escalations": 4,
+    "last_interaction": "2025-12-09T21:19:23.513066"
+  },
+  "DEMO.STUDENT": {
+    "student_id": "DEMO.STUDENT",
+    "name": "Student DEMO.STUDENT",
+    "major": "-",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
     "risk_level": "low",
     "total_escalations": 0,
-    "last_interaction": "2025-12-09T15:44:21.423320"
+    "last_interaction": "2025-12-09T16:05:55.147117"
+  },
+  "MANISH.SHARMA": {
+    "student_id": "MANISH.SHARMA",
+    "name": "Student MANISH.SHARMA",
+    "major": "-",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
+    "risk_level": "low",
+    "total_escalations": 1,
+    "last_interaction": "2025-12-09T21:25:50.268864"
+  },
+  "NIVU": {
+    "student_id": "NIVU",
+    "name": "Student NIVU",
+    "major": "-",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
+    "risk_level": "low",
+    "total_escalations": 1,
+    "last_interaction": "2025-12-10T14:52:00.938669"
+  },
+  "MICHEAL.PAGE": {
+    "student_id": "MICHEAL.PAGE",
+    "name": "Student MICHEAL.PAGE",
+    "major": "-",
+    "gpa": null,
+    "completed_courses": [],
+    "current_courses": [],
+    "risk_level": "low",
+    "total_escalations": 0,
+    "last_interaction": "2025-12-10T14:50:05.571437"
   }
 }

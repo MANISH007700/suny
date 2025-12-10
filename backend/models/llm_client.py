@@ -149,6 +149,48 @@ Remember: You must base your answers strictly on the provided context."""
             (should_escalate: bool, reason: str)
         """
         try:
+            # PRIORITY CHECK: Immediate escalation for financial aid, emergency, and help queries
+            # These ALWAYS need human advisor intervention regardless of AI response quality
+            question_lower = question.lower()
+            
+            critical_keywords = {
+                'financial aid': 'Student needs financial aid assistance',
+                'financial help': 'Student needs financial assistance',
+                'financial emergency': 'Student has a financial emergency',
+                'emergency': 'Student reported an emergency situation',
+                'urgent': 'Student has an urgent matter',
+                'crisis': 'Student reported a crisis',
+                'mental health': 'Student needs mental health support',
+                'counseling': 'Student needs counseling services',
+                'therapy': 'Student needs therapy services',
+                'drop out': 'Student considering dropping out',
+                'withdraw from school': 'Student considering withdrawing',
+                'leave school': 'Student considering leaving school',
+                'scholarship': 'Student needs scholarship information',
+                'grant': 'Student needs grant information',
+                'loan': 'Student needs loan information',
+                'fafsa': 'Student needs FAFSA assistance',
+                'can\'t afford': 'Student has affordability concerns',
+                'cannot afford': 'Student has affordability concerns',
+                'tuition payment': 'Student needs tuition payment assistance',
+                'fee waiver': 'Student needs fee waiver information',
+                'accommodation': 'Student needs accommodation support',
+                'disability': 'Student needs disability services',
+                'appeal': 'Student needs to file an appeal',
+                'petition': 'Student needs to file a petition',
+                'academic distress': 'Student in academic distress',
+                'failing': 'Student struggling academically',
+                'family emergency': 'Student has a family emergency',
+                'need help': 'Student explicitly requested help',
+                'need assistance': 'Student explicitly requested assistance',
+            }
+            
+            # Check for critical keywords that require immediate escalation
+            for keyword, reason in critical_keywords.items():
+                if keyword in question_lower:
+                    logger.info(f"IMMEDIATE ESCALATION: Detected '{keyword}' in question")
+                    return True, reason
+            
             # Build the escalation check prompt
             escalation_prompt = f"""You are an escalation decision system for an academic AI advisor. Your job is to determine if a student question needs human advisor review.
 
@@ -164,9 +206,10 @@ ESCALATION CRITERIA:
 You should recommend ESCALATION (respond "ESCALATE") if:
 1. AI response shows uncertainty or lacks information (phrases like "I don't have that information", "not in the documents", etc.)
 2. Critical situations requiring immediate human intervention (mental health crisis, emergency, student wants to drop out entirely, severe academic distress)
-3. Sensitive topics (financial aid, accommodations, appeals, waivers) WHERE the AI response is insufficient, unclear, or too brief
+3. Sensitive topics (financial aid, accommodations, appeals, waivers, scholarships, grants, loans) - ALWAYS ESCALATE FOR THESE
 4. AI response is extremely brief (<20 words) and doesn't fully answer the question
 5. No relevant documents were found (context count is 0) and answer is generic
+6. Any mention of money, payment, or financial concerns - ALWAYS ESCALATE
 
 You should recommend NO ESCALATION (respond "NO_ESCALATE") if:
 1. AI provided a detailed, comprehensive answer with good information
@@ -174,8 +217,9 @@ You should recommend NO ESCALATION (respond "NO_ESCALATE") if:
 3. Answer is clear and directly addresses the question, even if brief
 4. Question is straightforward and AI answered it well (e.g., "What's the deadline?" → "The deadline is March 15th")
 5. The student received helpful, actionable information they can use
+6. Question is ONLY about courses, prerequisites, or academic requirements (NOT financial)
 
-IMPORTANT: Be practical and conservative. Only escalate when the student truly needs human help. If the AI answered well, don't escalate.
+CRITICAL: Financial aid, scholarships, grants, loans, payment issues, and emergencies MUST ALWAYS be escalated to human advisors.
 
 Respond in this exact format:
 DECISION: [ESCALATE or NO_ESCALATE]

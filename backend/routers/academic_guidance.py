@@ -28,11 +28,55 @@ def get_rag_pipeline():
         _rag_pipeline = RAGPipeline()
     return _rag_pipeline
 
-def _is_course_query(question: str) -> bool:
+def _is_escalation_query(question: str) -> bool:
     """
-    Detect if a question is asking about course recommendations
+    Detect if a question requires escalation to human advisor.
+    These queries should NEVER trigger course recommendations.
+    
+    Returns True for:
+    - Financial aid/emergency/help queries
+    - Crisis situations
+    - Sensitive topics requiring human intervention
     """
     question_lower = question.lower()
+    
+    # Keywords that indicate need for human advisor
+    escalation_keywords = [
+        'financial aid', 'finance help', 'financial help', 'financial emergency',
+        'financial problems', 'financial issue', 'financial situation',
+        'emergency', 'urgent', 'crisis',
+        'aid', 'scholarship', 'grant', 'loan', 'fafsa',
+        'help with money', 'need money', 'can\'t afford', 'cannot afford',
+        'payment', 'tuition', 'fee waiver', 'tuition help',
+        'accommodation', 'disability', 'special needs',
+        'mental health', 'counseling', 'therapy',
+        'appeal', 'petition', 'waiver',
+        'drop out', 'withdraw', 'leave school',
+        'struggling', 'failing', 'academic distress',
+        'personal issue', 'family emergency',
+        'need help', 'need assistance', 'need support'
+    ]
+    
+    # Check if question contains escalation keywords
+    for keyword in escalation_keywords:
+        if keyword in question_lower:
+            return True
+    
+    return False
+
+
+def _is_course_query(question: str) -> bool:
+    """
+    Detect if a question is asking about course recommendations.
+    
+    IMPORTANT: This should return False for financial aid/help/emergency queries.
+    """
+    question_lower = question.lower()
+    
+    # First check if this is an escalation query (financial aid, emergency, help)
+    # These should NEVER be treated as course queries
+    if _is_escalation_query(question_lower):
+        return False
     
     course_keywords = [
         'course', 'courses', 'class', 'classes',
@@ -143,8 +187,12 @@ async def chat(request: ChatRequest):
     try:
         pipeline = get_rag_pipeline()
         
-        # Check if this is a course-related query
-        is_course_query = _is_course_query(request.question)
+        # FIRST: Check if this is an escalation-worthy query (financial aid, emergency, help)
+        # These should NEVER trigger course recommendations
+        is_escalation_query = _is_escalation_query(request.question)
+        
+        # SECOND: Check if this is a course-related query (only if NOT an escalation query)
+        is_course_query = _is_course_query(request.question) if not is_escalation_query else False
         
         # Try to handle course queries if courses are loaded
         if is_course_query:
